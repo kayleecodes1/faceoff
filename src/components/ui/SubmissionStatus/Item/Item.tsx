@@ -5,11 +5,11 @@ import X from '@components/icons/X';
 import { Root } from './Item.styles';
 
 export enum SubmissionState {
-    Pending,
-    Submitted,
-    Unknown,
-    Success,
-    Error,
+    Pending = 'Pending',
+    Submitted = 'Submitted',
+    Unknown = 'Unknown',
+    Success = 'Success',
+    Error = 'Error',
 }
 
 const itemAttributes = {

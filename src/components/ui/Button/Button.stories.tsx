@@ -1,13 +1,10 @@
-/*
-children?: React.ReactNode;
-disabled?: boolean;
-fullWidth?: boolean;
-isLoading?: boolean;
-variant?: 'primary' | 'plain';
-*/
 import { ComponentMeta, ComponentStory } from '@storybook/react';
+import Button from '@components/ui/Button';
 
-import Button from './Button';
+const Template: ComponentStory<typeof Button> = (args) => <Button {...args} />;
+
+const Main = Template.bind({});
+export { Main as Button };
 
 export default {
     title: 'UI/Button',
@@ -23,9 +20,3 @@ export default {
         },
     },
 } as ComponentMeta<typeof Button>;
-
-const Template: ComponentStory<typeof Button> = (args) => <Button {...args} />;
-
-const Main = Template.bind({});
-
-export { Main as Button };

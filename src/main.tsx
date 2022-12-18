@@ -1,17 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import Home from '@components/screens/Home';
-import HostLobby from '@components/screens/HostLobby';
-import PlayerLobby from '@components/screens/PlayerLobby';
-import { LobbyProvider } from '@contexts/LobbyContext';
+import { GlobalProvider } from '@contexts/GlobalContext';
 import StylesProvider from '@styles/StylesProvider';
+import App from './App';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
         <StylesProvider>
-            <LobbyProvider>
-                <HostLobby />
-            </LobbyProvider>
+            <GlobalProvider>
+                <App />
+            </GlobalProvider>
         </StylesProvider>
     </React.StrictMode>,
 );

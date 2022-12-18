@@ -5,24 +5,20 @@ const bounceAnimation = createBounceAnimation((t) => ({
     transform: `scale(${0.4 + 0.6 * t})`,
 }));
 
-export const Root = styled.div({
-    display: 'flex',
-    flexFlow: 'row nowrap',
-    alignItems: 'center',
-    gap: 8,
-});
-
-export const Card = styled.li(({ theme }) => ({
-    display: 'flex',
-    flexFlow: 'row nowrap',
-    alignItems: 'center',
-    gap: 8,
-    width: 300,
-    height: 56,
-    borderRadius: 28,
-    background: theme.colors.white,
-    border: `3px solid ${theme.colors.primaryLighter}`,
-}));
+export const Root = styled.li<{ isConnected?: boolean }>(
+    ({ isConnected = true, theme }) => ({
+        display: 'flex',
+        flexFlow: 'row nowrap',
+        alignItems: 'center',
+        gap: 8,
+        width: 300,
+        height: 56,
+        borderRadius: 28,
+        background: theme.colors.white,
+        border: `3px solid ${theme.colors.primaryLighter}`,
+        opacity: isConnected ? 1 : 0.5,
+    }),
+);
 
 export const AvatarContainer = styled.div({
     flexShrink: 0,
@@ -44,12 +40,11 @@ export const Points = styled.div(
         position: 'relative',
         flexShrink: 0,
         fontWeight: 800,
-        fontSize: 17,
+        fontSize: 24,
         color: theme.colors.primary,
         marginRight: 16,
     }),
     css`
         animation: ${bounceAnimation} 1000ms linear forwards;
     `,
-);
-// TODO we don't want bounce on mount ... could just not apply animation class if points === 0
+); // TODO don't bounce points on mount

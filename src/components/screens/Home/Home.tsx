@@ -1,22 +1,23 @@
 import { useCallback } from 'react';
-import CreateLobbyForm from '@components/features/CreateLobbyForm';
-import JoinLobbyForm from '@components/features/JoinLobbyForm';
-import LobbyHost from '@components/features/LobbyHost';
+import CreateLobbyForm from '@components/ui/CreateLobbyForm';
+import JoinLobbyForm from '@components/ui/JoinLobbyForm';
+import useGlobalContext from '@contexts/GlobalContext/useGlobalContext';
 import { Root, Container, Divider } from './Home.styles';
 
 const Lobby: React.FC = () => {
+    const { clientState, createClient, createHost, hostState } =
+        useGlobalContext();
+
     const handleSubmitJoin = useCallback(
-        async ({ roomCode, name }: { roomCode: string; name: string }) => {
-            console.log('join', roomCode, name); // TODO
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+        async ({ joinCode, name }: { joinCode: string; name: string }) => {
+            await createClient(joinCode, name);
         },
-        [],
+        [createClient],
     );
 
     const handleSubmitCreate = useCallback(async () => {
-        console.log('create'); // TODO
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-    }, []);
+        await createHost();
+    }, [createHost]);
 
     return (
         <Root>

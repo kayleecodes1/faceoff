@@ -2,6 +2,12 @@ import type { DefaultTheme } from 'styled-components';
 
 declare module 'styled-components' {
     interface DefaultTheme {
+        breakpoints: {
+            mobileSmall: string;
+            mobile: string;
+            tablet: string;
+            desktop: string;
+        };
         colors: {
             background: string;
             error: string;
@@ -34,6 +40,12 @@ declare module 'styled-components' {
 }
 
 const defaultTheme: DefaultTheme = {
+    breakpoints: {
+        mobileSmall: '320px',
+        mobile: '425px',
+        tablet: '768px',
+        desktop: '2560px',
+    },
     colors: {
         background: '#EDEFFF',
         error: '#F47070',
@@ -41,7 +53,7 @@ const defaultTheme: DefaultTheme = {
         plainDark: '#B5B5C1',
         plainDarker: '#757585',
         primary: '#5F67EA',
-        primaryLight: '#959bFF',
+        primaryLight: '#959BFF',
         primaryLighter: '#D0D2F2',
         primaryDark: '#4E4893',
         secondary: '#FA77A2', // TODO remove?

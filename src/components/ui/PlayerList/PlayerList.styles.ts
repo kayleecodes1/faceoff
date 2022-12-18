@@ -1,17 +1,25 @@
-import { TransitionStatus } from 'react-transition-group';
-import styled, { css, keyframes } from 'styled-components';
-import createBounceAnimation from '@styles/animations/createBounceAnimation';
+import FlipMove from 'react-flip-move';
+import styled from 'styled-components';
 
-const bounceAnimation = createBounceAnimation((n) => ({
-    transform: `scale(${0.5 + 0.5 * n})`,
-}));
+const enterAnimation = {
+    from: { opacity: 0, transform: 'translateX(-50px)' },
+    to: { opacity: 1, transform: 'translateX(0)' },
+};
 
-const fadeInAnimation = keyframes({
-    '0%': { opacity: 0 },
-    '100%': { opacity: 1 },
-});
+const leaveAnimation = {
+    from: { opacity: 1, transform: 'translateX(0)' },
+    to: { opacity: 0, transform: 'translateX(-50px)' },
+};
 
-export const Root = styled.ul({
+export const Root = styled(FlipMove).attrs({
+    duration: 600,
+    easing: 'ease-out',
+    enterAnimation,
+    leaveAnimation,
+    staggerDelayBy: 100,
+    staggerDurationBy: 50,
+    typeName: 'ul',
+})({
     display: 'flex',
     flexFlow: 'column nowrap',
     gap: 8,
@@ -20,12 +28,6 @@ export const Root = styled.ul({
     margin: 0,
 });
 
-export const Item = styled.li<{ state: TransitionStatus }>(
-    {
-        //
-    },
-    css`
-        animation: ${bounceAnimation} 600ms linear both,
-            ${fadeInAnimation} 300ms ease-out both;
-    `,
-);
+export const Item = styled.li({
+    //
+});

@@ -1,4 +1,5 @@
 import avatarNone from '@assets/avatars/avatar_none.png';
+import avatarAlina from '@assets/avatars/avatar_alina.png';
 import avatarBeryl from '@assets/avatars/avatar_beryl.png';
 import avatarBetsy from '@assets/avatars/avatar_betsy.png';
 import avatarBrian from '@assets/avatars/avatar_brian.png';
@@ -15,26 +16,29 @@ import avatarRyan from '@assets/avatars/avatar_ryan.png';
 import avatarSpencer from '@assets/avatars/avatar_spencer.png';
 import { Root, Image } from './PlayerAvatar.styles';
 
+// TODO centralize this, it's used by the data layer
 export enum AvatarImage {
-    None,
-    Beryl,
-    Betsy,
-    Brian,
-    Celia,
-    Jamie,
-    Jarrett,
-    Jerry,
-    Katie,
-    Kaylee,
-    Kelsey,
-    KerrieG,
-    KerrieM,
-    Ryan,
-    Spencer,
+    None = 'None',
+    Alina = 'Alina',
+    Beryl = 'Beryl',
+    Betsy = 'Betsy',
+    Brian = 'Brian',
+    Celia = 'Celia',
+    Jamie = 'Jamie',
+    Jarrett = 'Jarrett',
+    Jerry = 'Jerry',
+    Katie = 'Katie',
+    Kaylee = 'Kaylee',
+    Kelsey = 'Kelsey',
+    KerrieG = 'KerrieG',
+    KerrieM = 'KerrieM',
+    Ryan = 'Ryan',
+    Spencer = 'Spencer',
 }
 
 const avatarImages: Record<AvatarImage, string> = {
     [AvatarImage.None]: avatarNone,
+    [AvatarImage.Alina]: avatarAlina,
     [AvatarImage.Beryl]: avatarBeryl,
     [AvatarImage.Betsy]: avatarBetsy,
     [AvatarImage.Brian]: avatarBrian,
@@ -52,7 +56,7 @@ const avatarImages: Record<AvatarImage, string> = {
 };
 
 interface PlayerAvatarProps {
-    background?: 'default' | 'highlight';
+    background?: 'default' | 'highlight' | 'success' | 'error';
     image?: AvatarImage;
     size?: number;
 }

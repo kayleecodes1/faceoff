@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
-export const Root = styled.input<{ fullWidth?: boolean; hasError?: boolean }>(
-    ({ fullWidth = false, hasError = false, theme }) => ({
+export const Root = styled.input<{ fullWidth?: boolean }>(
+    ({ fullWidth = false, theme }) => ({
         display: fullWidth ? 'block' : 'inline-block',
         width: fullWidth ? '100%' : undefined,
         height: theme.size.inputHeight,
@@ -15,8 +15,7 @@ export const Root = styled.input<{ fullWidth?: boolean; hasError?: boolean }>(
         border: `2px solid ${theme.colors.primaryLighter}`,
         outline: 0,
         '&:focus': {
-            borderColor: hasError ? undefined : theme.colors.primary,
+            borderColor: theme.colors.primary,
         },
-        borderColor: hasError ? theme.colors.error : undefined, // TODO
     }),
 );

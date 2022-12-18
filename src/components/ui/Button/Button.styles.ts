@@ -41,4 +41,9 @@ export const Root = styled.button<{
     '&:disabled': {
         opacity: isLoading ? undefined : 0.7,
     },
+    [`@media (max-width: ${theme.breakpoints.mobile})`]: {
+        height: 40,
+        fontSize: 16,
+        padding: '0 12px',
+    },
 }));

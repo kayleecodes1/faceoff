@@ -15,12 +15,15 @@
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "react-jsx",
+        "experimentalDecorators": true,
         "baseUrl": ".",
         "paths": {
             "@assets/*": ["./src/assets/*"],
             "@components/*": ["./src/components/*"],
             "@constants/*": ["./src/constants/*"],
             "@contexts/*": ["./src/contexts/*"],
+            "@data/*": ["./src/data/*"],
+            "@store/*": ["./src/store/*"],
             "@styles/*": ["./src/styles/*"],
             "@utilities/*": ["./src/utilities/*"]
         }
