@@ -1,7 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { AvatarImage } from '@components/ui/PlayerAvatar';
-import type { SubmissionState } from '@components/ui/SubmissionStatus';
-import type { Prompt } from '@data/prompts';
+import { AvatarImage, GamePhase, SubmissionResult } from '@store/common/common.types';
 
 interface ClientPlayer {
     avatarImage: AvatarImage;
@@ -12,6 +10,9 @@ interface ClientPlayer {
 class GameState {
     private _player: ClientPlayer;
     private _disabledAvatars: Set<AvatarImage>;
+    //private _gamePhase: GamePhase;
+    private _answers: [AvatarImage, AvatarImage] | null;
+    private _submissionResults: [SubmissionResult, SubmissionResult] | null;
 
     public get player(): ClientPlayer {
         return this._player;
@@ -21,6 +22,10 @@ class GameState {
         return this._disabledAvatars;
     }
 
+    public get gamePhase(): GamePhase {
+        return this._gamePhase;
+    }
+
     constructor(id: string, name: string) {
         this._player = {
             avatarImage: AvatarImage.None,
@@ -28,6 +33,9 @@ class GameState {
             name,
         };
         this._disabledAvatars = new Set();
+        //this._gamePhase = ;
+        this._answers = null;
+        this._submissionResults = null;
         makeAutoObservable(this);
     }
 
@@ -40,6 +48,19 @@ class GameState {
 
     updateDisabledAvatars(disabledAvatars: Iterable<AvatarImage>) {
         this._disabledAvatars = new Set(disabledAvatars);
+    }
+
+    updateGamePhase(gamePhase: GamePhase) {
+        this._gamePhase = gamePhase;
+        // TODO clear answers or submissionResults depending on phase
+    }
+
+    updateAnswers(answers: [AvatarImage, AvatarImage] | null) {
+        this._answers = answers;
+    }
+
+    updateSubmissionResults(submissionResults: [SubmissionResult, SubmissionResult] | null) {
+        this._submissionResults = submissionResults;
     }
 }
 

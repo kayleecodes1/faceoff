@@ -1,5 +1,5 @@
-import { AvatarImage } from '@components/ui/PlayerAvatar';
 import type { Prompt } from '@data/prompts';
+import { AvatarImage } from '@store/common/common.types';
 import a from './a.png';
 import b from './b.png';
 import result from './result.png';

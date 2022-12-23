@@ -44,6 +44,7 @@ const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
             const client = await Client.create(joinCode, name);
             setClientState((previousState) => ({ ...previousState, client }));
         } catch (error) {
+            console.log(error);
             setClientState((previousState) => ({
                 ...previousState,
                 error: String(error),
@@ -65,11 +66,7 @@ const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
         [createClient, createHost, clientState, hostState],
     );
 
-    return (
-        <GlobalContext.Provider value={value}>
-            {children}
-        </GlobalContext.Provider>
-    );
+    return <GlobalContext.Provider value={value}>{children}</GlobalContext.Provider>;
 };
 
 export default GlobalProvider;

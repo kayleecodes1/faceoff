@@ -1,9 +1,9 @@
 import { DataConnection, Peer } from 'peerjs';
-import { AvatarImage } from '@components/ui/PlayerAvatar';
-import { ClientMessageType, ClientMessage } from './Client.types';
-import ClientGameState from './ClientGameState';
+import { AvatarImage, GamePhase, SubmissionResult } from '@store/common/common.types';
 import Host from '@store/host/Host';
 import { HostMessage, HostMessageType } from '@store/host/Host.types';
+import { ClientMessageType, ClientMessage } from './Client.types';
+import ClientGameState from './ClientGameState';
 
 class Client {
     private _peer: Peer;
@@ -14,11 +14,7 @@ class Client {
         return this._gameState;
     }
 
-    constructor(
-        peer: Peer,
-        connection: DataConnection,
-        gameState: ClientGameState,
-    ) {
+    constructor(peer: Peer, connection: DataConnection, gameState: ClientGameState) {
         this._peer = peer;
         this._connection = connection;
         this._gameState = gameState;
@@ -32,32 +28,27 @@ class Client {
         });
     }
 
-    public static async create(
-        joinCode: string,
-        name: string,
-    ): Promise<Client> {
+    public static async create(joinCode: string, name: string): Promise<Client> {
         const peer = new Peer(); // _peer.id PROVIDE ID, so we can store it for later
+
+        // Connect to peer server.
         await new Promise((resolve, reject) => {
             peer.on('open', resolve);
             peer.on('error', reject);
         });
-        peer.off('open');
-        peer.off('error');
-        console.log('peer open');
+        peer.removeAllListeners();
 
+        // Connect to host.
         const connectionId = Host.getConnectionId(joinCode);
         const connection = peer.connect(connectionId);
         await new Promise<void>((resolve, reject) => {
             connection.on('open', resolve);
             connection.on('error', reject);
         });
-        connection.off('open');
-        connection.off('error');
-        console.log('connection open');
+        connection.removeAllListeners();
 
         const gameState = new ClientGameState(peer.id, name);
 
-        console.log('y', connection);
         // Send join request and wait for response.
         await new Promise<void>((resolve, reject) => {
             connection.send({
@@ -79,8 +70,7 @@ class Client {
                 }
             });
         });
-        connection.off('data');
-        console.log('game joined');
+        connection.removeAllListeners();
 
         const client = new Client(peer, connection, gameState);
         return client;
@@ -109,6 +99,15 @@ class Client {
         });
     }
 
+    // TODO use on front end
+    public submitAnswers(answers: [AvatarImage, AvatarImage]) {
+        // TODO update form submission state
+        this._sendMessage({
+            type: ClientMessageType.SubmitAnswers,
+            data: { answers },
+        });
+    }
+
     private _sendMessage(message: ClientMessage): void {
         this._connection.send(message);
     }
@@ -128,6 +127,20 @@ class Client {
                 this._handleUpdateDisabledAvatars(data.disabledAvatars);
                 break;
             }
+            case HostMessageType.UpdateGamePhase: {
+                // TODO
+                data.gamePhase;
+                if (data.gamePhase === GamePhase.Results) {
+                    this._handleUpdateGamePhase(data.gamePhase, data.answers);
+                } else {
+                    this._handleUpdateGamePhase(/* TODO */);
+                }
+                break;
+            }
+            case HostMessageType.UpdateSubmissionResult: {
+                this._handleUpdateSubmissionResult(data.results);
+                break;
+            }
         }
     }
 
@@ -143,6 +156,17 @@ class Client {
 
     private _handleUpdateDisabledAvatars(disabledAvatars: AvatarImage[]) {
         this._gameState.updateDisabledAvatars(disabledAvatars);
+    }
+
+    private _handleUpdateGamePhase(gamePhase: GamePhase): void;
+    private _handleUpdateGamePhase(gamePhase: GamePhase.Results, answers: [AvatarImage, AvatarImage]): void;
+    private _handleUpdateGamePhase() {
+        // TODO update game phase, reset any state that needs resetting
+        // TODO if gamePhase === results, also update answers
+    }
+
+    private _handleUpdateSubmissionResult(results: [SubmissionResult, SubmissionResult]) {
+        // TODO
     }
 }
 

@@ -1,4 +1,4 @@
-import type { AvatarImage } from '@components/ui/PlayerAvatar';
+import type { AvatarImage, GamePhase, SubmissionResult } from '@store/common/common.types';
 
 export enum HostMessageType {
     JoinSuccess = 'JoinSuccess',
@@ -6,9 +6,8 @@ export enum HostMessageType {
     UpdateNameError = 'UpdateNameError',
     UpdateAvatarError = 'UpdateAvatarError',
     UpdateDisabledAvatars = 'UpdateDisabledAvatars',
-
-    // UpdateGamePhase
-    // UpdateSubmissionResult
+    UpdateGamePhase = 'UpdateGamePhase',
+    UpdateSubmissionResult = 'UpdateSubmissionResult',
 }
 
 export type HostMessage =
@@ -16,6 +15,7 @@ export type HostMessage =
           type: HostMessageType.JoinSuccess;
           data: {
               disabledAvatars: AvatarImage[];
+              // TODO gamePhase: GamePhase;
           };
       }
     | {
@@ -40,5 +40,24 @@ export type HostMessage =
           type: HostMessageType.UpdateDisabledAvatars;
           data: {
               disabledAvatars: AvatarImage[];
+          };
+      }
+    | {
+          type: HostMessageType.UpdateGamePhase;
+          data: {
+              gamePhase: Omit<GamePhase, GamePhase.Results>;
+          };
+      }
+    | {
+          type: HostMessageType.UpdateGamePhase;
+          data: {
+              gamePhase: GamePhase.Results;
+              answers: [AvatarImage, AvatarImage];
+          };
+      }
+    | {
+          type: HostMessageType.UpdateSubmissionResult;
+          data: {
+              results: [SubmissionResult, SubmissionResult];
           };
       };

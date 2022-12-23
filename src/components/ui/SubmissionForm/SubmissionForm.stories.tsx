@@ -1,14 +1,9 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import { AvatarImage } from '@components/ui/PlayerAvatar';
 import SubmissionForm from '@components/ui/SubmissionForm';
+import { AvatarImage } from '@store/common/common.types';
 
-const Template: ComponentStory<typeof SubmissionForm> = ({
-    onSubmit,
-    ...args
-}) => {
-    const handleSubmit = async (values: {
-        answers: [AvatarImage, AvatarImage];
-    }) => {
+const Template: ComponentStory<typeof SubmissionForm> = ({ onSubmit, ...args }) => {
+    const handleSubmit = async (values: { answers: [AvatarImage, AvatarImage] }) => {
         await new Promise((resolve) => setTimeout(resolve, 1000));
         onSubmit(values);
     };

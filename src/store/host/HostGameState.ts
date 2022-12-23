@@ -1,8 +1,6 @@
 import { makeAutoObservable } from 'mobx';
-import { AvatarImage } from '@components/ui/PlayerAvatar';
 import { SubmissionState } from '@components/ui/SubmissionStatus';
-import type { Prompt } from '@data/prompts';
-import type Host from './Host';
+import { AvatarImage, GamePhase, Prompt } from '@store/common/common.types';
 
 interface HostPlayer {
     avatarImage: AvatarImage;
@@ -11,7 +9,11 @@ interface HostPlayer {
     isConnected: boolean;
     name: string;
     points?: number;
-    submissionState?: SubmissionState[];
+}
+
+interface HostPlayerDerived {
+    submission: [AvatarImage, AvatarImage] | null;
+    submissionState: SubmissionState[];
 }
 
 interface TimerState {
@@ -25,65 +27,32 @@ interface PromptState {
     showSourceB: boolean;
 }
 
-export enum GamePhase {
-    Lobby = 'Lobby',
-    Prompt = 'Prompt',
-    Submission = 'Submission',
-    Results = 'Results',
-    End = 'End',
-}
-
 class GameState {
     private _joinCode: string;
     private _players: Map<string, HostPlayer>;
     private _gamePhase: GamePhase;
     // TODO we should load up all of the prompts ahead of time
     // TODO timer
+    //private _prompts: Prompt[];
+    //private _currentPromptIndex: number;
     private _promptState: PromptState | null;
     private _submissions: Map<string, [AvatarImage, AvatarImage]>;
-
-    private async startGame() {
-        // count down
-        // store all prompts ...
-        // advance phase to prompt, notify players
-    }
-
-    private async executePrompt() {
-        // TODO
-    }
-
-    private async executeSubmission() {
-        // set all submission status to [SubmissionState.Pending]
-        // when submission received, set player submission status to [SubmissionState.Submitted]
-    }
-
-    private async executeResults() {
-        // send phase to each player, with their submissions
-        // set all submission results to [SubmissionState.Unknown, SubmissionState.Unknown]
-        // ...
-        // if all players submitted OR timer runs out, move on
-        // ...
-        // show sourceA
-        // update submission results / points
-        // send result to each player (how to connect Host?)
-        // show sourceB
-        // update submission results / points
-        // send result to each player (how to connect Host?)
-        // sort players by points
-    }
 
     public get joinCode(): string {
         return this._joinCode;
     }
 
-    public get players(): HostPlayer[] {
-        return Array.from(this._players.values()); // TODO sort
+    public get players(): (HostPlayer & HostPlayerDerived)[] {
+        return Array.from(this._players.values()).map((player) => ({
+            ...player,
+            submission: this._submissions.get(player.id) || null,
+            submissionState: this._submissionStates.get(player.id) || [],
+        }));
+        // TODO sort
     }
 
     public get disabledNames(): Set<string> {
-        return new Set(
-            Array.from(this._players.values()).map(({ name }) => name),
-        );
+        return new Set(Array.from(this._players.values()).map(({ name }) => name));
     }
 
     public get disabledAvatars(): Set<AvatarImage> {
@@ -92,6 +61,27 @@ class GameState {
                 .filter(({ avatarImage }) => avatarImage !== AvatarImage.None)
                 .map(({ avatarImage }) => avatarImage),
         );
+    }
+
+    public get gamePhase(): GamePhase {
+        return this._gamePhase;
+    }
+
+    public get promptState(): PromptState | null {
+        return this._promptState;
+    }
+
+    public get submissions(): Map<string, [AvatarImage, AvatarImage]> {
+        return this._submissions;
+    }
+
+    private get _submissionStates(): Map<string, SubmissionState[]> {
+        // if GamePhase.Submission, SubmissionState.Pending if no _submissions, else SubmissionState.Submitted
+        // if GamePhase.Results, calculate SubmissionState.Unknown SubmissionState.Success SubmissionState.Error
+        //      based on promptState and submissions
+        // else empty
+
+        return new Map();
     }
 
     /*
@@ -106,6 +96,8 @@ class GameState {
         this._joinCode = joinCode;
         this._players = new Map();
         this._gamePhase = GamePhase.Lobby;
+        //this._prompts = prompts;
+        //this._currentPromptIndex = 0;
         this._promptState = null;
         this._submissions = new Map();
         makeAutoObservable(this);
@@ -133,15 +125,52 @@ class GameState {
     updatePlayer(playerId: string, data: Partial<Omit<HostPlayer, 'id'>>) {
         const player = this._players.get(playerId);
         if (typeof player === 'undefined') {
-            console.warn(
-                `Attempted to update non-existent player with ID '${playerId}'`,
-            );
+            console.warn(`Attempted to update non-existent player with ID '${playerId}'`);
             return;
         }
         this._players.set(playerId, {
             ...player,
             ...data,
         });
+    }
+
+    setGamePhase(gamePhase: GamePhase) {
+        this._gamePhase = gamePhase;
+    }
+
+    setPrompt(prompt: Prompt) {
+        this._promptState = {
+            prompt,
+            showResult: false,
+            showSourceA: false,
+            showSourceB: false,
+        };
+    }
+
+    showPromptResult() {
+        if (this._promptState !== null) {
+            this._promptState.showResult = true;
+        }
+    }
+
+    showPromptSourceA() {
+        if (this._promptState !== null) {
+            this._promptState.showSourceA = true;
+        }
+    }
+
+    showPromptSourceB() {
+        if (this._promptState !== null) {
+            this._promptState.showSourceB = true;
+        }
+    }
+
+    setSubmission(playerId: string, answers: [AvatarImage, AvatarImage]) {
+        this._submissions.set(playerId, answers);
+    }
+
+    clearSubmissions() {
+        this._submissions.clear();
     }
 
     /*

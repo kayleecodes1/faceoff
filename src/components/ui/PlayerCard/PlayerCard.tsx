@@ -1,4 +1,5 @@
-import PlayerAvatar, { AvatarImage } from '@components/ui/PlayerAvatar';
+import PlayerAvatar from '@components/ui/PlayerAvatar';
+import { AvatarImage } from '@store/common/common.types';
 import { Root, AvatarContainer, Name, Points } from './PlayerCard.styles';
 
 interface PlayerCardProps {

@@ -1,9 +1,8 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import PlayerAvatar, { AvatarImage } from '@components/ui/PlayerAvatar';
+import PlayerAvatar from '@components/ui/PlayerAvatar';
+import { AvatarImage } from '@store/common/common.types';
 
-const Template: ComponentStory<typeof PlayerAvatar> = (args) => (
-    <PlayerAvatar {...args} />
-);
+const Template: ComponentStory<typeof PlayerAvatar> = (args) => <PlayerAvatar {...args} />;
 
 const Main = Template.bind({});
 export { Main as PlayerAvatar };

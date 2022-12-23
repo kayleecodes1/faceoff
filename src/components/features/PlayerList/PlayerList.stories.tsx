@@ -1,8 +1,8 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import PlayerList from '@components/features/PlayerList';
-import { AvatarImage } from '@components/ui/PlayerAvatar';
 import { SubmissionState } from '@components/ui/SubmissionStatus';
 import PlayersContext from '@contexts/PlayersContext';
+import { AvatarImage } from '@store/common/common.types';
 
 const Main: ComponentStory<typeof PlayerList> = () => {
     const value = {

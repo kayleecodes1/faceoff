@@ -1,4 +1,7 @@
-import { AvatarImage } from '@components/ui/PlayerAvatar';
+import type { AvatarImage } from '@store/common/common.types';
+import prompt01 from './01';
+import prompt02 from './02';
+import prompt03 from './03';
 
 interface SourceData {
     image: string;
@@ -13,6 +16,6 @@ export interface Prompt {
     };
 }
 
-// TODO build list of all possible identities
+const prompts = [prompt01, prompt02, prompt03];
 
-// TODO also, validate all prompts
+export default prompts;

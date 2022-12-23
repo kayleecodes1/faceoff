@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import { AvatarImage } from '@components/ui/PlayerAvatar';
 import PlayerCard from '@components/ui/PlayerCard';
+import { AvatarImage } from '@store/common/common.types';
 
 const Template: ComponentStory<typeof PlayerCard> = ({ ...args }) => {
     return <PlayerCard {...args} />;

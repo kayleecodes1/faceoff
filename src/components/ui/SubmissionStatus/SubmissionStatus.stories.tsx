@@ -1,7 +1,5 @@
 import { ComponentMeta, Story } from '@storybook/react';
-import SubmissionStatus, {
-    SubmissionState,
-} from '@components/ui/SubmissionStatus';
+import SubmissionStatus, { SubmissionState } from '@components/ui/SubmissionStatus';
 
 const Main: Story = ({ state1, state2 }) => (
     <SubmissionStatus>

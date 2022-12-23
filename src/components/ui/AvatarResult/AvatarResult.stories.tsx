@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import { AvatarImage } from '@components/ui/PlayerAvatar';
 import AvatarResult, { AvatarResultResult } from '@components/ui/AvatarResult';
+import { AvatarImage } from '@store/common/common.types';
 
 const Template: ComponentStory<typeof AvatarResult> = ({ ...args }) => {
     return <AvatarResult {...args} />;

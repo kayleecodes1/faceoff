@@ -1,14 +1,9 @@
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import Button from '@components/ui/Button';
-import PlayerAvatar, { AvatarImage } from '@components/ui/PlayerAvatar';
-import {
-    Root,
-    Grid,
-    Item,
-    AvatarWrapper,
-    AvatarInput,
-} from './SubmissionForm.styles';
+import PlayerAvatar from '@components/ui/PlayerAvatar';
+import { AvatarImage } from '@store/common/common.types';
+import { Root, Grid, Item, AvatarWrapper, AvatarInput } from './SubmissionForm.styles';
 import React from 'react';
 
 const INPUT_AVATAR_SIZE = 64;
@@ -21,9 +16,7 @@ const validationSchema = yup.object().shape({
 });
 
 interface SubmissionFormProps {
-    onSubmit: (values: {
-        answers: [AvatarImage, AvatarImage];
-    }) => Promise<void>;
+    onSubmit: (values: { answers: [AvatarImage, AvatarImage] }) => Promise<void>;
 }
 
 const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSubmit }) => {
@@ -41,10 +34,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSubmit }) => {
     });
 
     return (
-        <Root
-            style={{ display: 'flex', flexFlow: 'column nowrap', gap: 32 }}
-            onSubmit={formik.handleSubmit}
-        >
+        <Root style={{ display: 'flex', flexFlow: 'column nowrap', gap: 32 }} onSubmit={formik.handleSubmit}>
             <div
                 style={{
                     display: 'flex',
@@ -55,27 +45,18 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSubmit }) => {
                 }}
             >
                 <PlayerAvatar
-                    background={
-                        formik.values.answers[0] ? 'highlight' : 'default'
-                    }
+                    background={formik.values.answers[0] ? 'highlight' : 'default'}
                     image={formik.values.answers[0]}
                     size={150}
                 />
                 <PlayerAvatar
-                    background={
-                        formik.values.answers[1] ? 'highlight' : 'default'
-                    }
+                    background={formik.values.answers[1] ? 'highlight' : 'default'}
                     image={formik.values.answers[1]}
                     size={150}
                 />
             </div>
             <div>
-                <Button
-                    disabled={!formik.isValid}
-                    fullWidth
-                    isLoading={formik.isSubmitting}
-                    type="submit"
-                >
+                <Button disabled={!formik.isValid} fullWidth isLoading={formik.isSubmitting} type="submit">
                     Submit
                 </Button>
             </div>
@@ -84,17 +65,13 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSubmit }) => {
                     if (avatarImage === AvatarImage.None) {
                         return;
                     }
-                    const isSelected =
-                        formik.values.answers.includes(avatarImage);
-                    const isDisabled =
-                        formik.values.answers.length === 2 && !isSelected;
+                    const isSelected = formik.values.answers.includes(avatarImage);
+                    const isDisabled = formik.values.answers.length === 2 && !isSelected;
                     return (
                         <Item key={avatarImage}>
                             <AvatarWrapper isDisabled={isDisabled}>
                                 <PlayerAvatar
-                                    background={
-                                        isSelected ? 'highlight' : 'default'
-                                    }
+                                    background={isSelected ? 'highlight' : 'default'}
                                     image={avatarImage as any}
                                     size={INPUT_AVATAR_SIZE}
                                 />

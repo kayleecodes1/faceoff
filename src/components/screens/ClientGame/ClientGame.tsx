@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 import AvatarSelect from '@components/ui/AvatarSelect';
 import ChangeNameForm from '@components/ui/ChangeNameForm';
-import type { AvatarImage } from '@components/ui/PlayerAvatar';
 import { useClient } from '@contexts/ClientContext';
+import { AvatarImage } from '@store/common/common.types';
 import { Root, Container } from './ClientGame.styles';
 
 const ClientGame: React.FC = () => {
@@ -24,10 +24,7 @@ const ClientGame: React.FC = () => {
         <Root>
             <Container>
                 <button onClick={handleLeave}>Leave</button>
-                <ChangeNameForm
-                    onSubmit={handleChangeName}
-                    value={client.gameState.player.name}
-                />
+                <ChangeNameForm onSubmit={handleChangeName} value={client.gameState.player.name} />
                 <AvatarSelect
                     disabledValues={client.gameState.disabledAvatars}
                     onChange={handleChangeAvatar}
