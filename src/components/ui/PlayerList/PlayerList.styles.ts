@@ -2,13 +2,13 @@ import FlipMove from 'react-flip-move';
 import styled from 'styled-components';
 
 const enterAnimation = {
-    from: { opacity: 0, transform: 'translateX(-50px)' },
-    to: { opacity: 1, transform: 'translateX(0)' },
+    from: { opacity: '0', transform: 'translateX(-50px)' },
+    to: { opacity: '1', transform: 'translateX(0)' },
 };
 
 const leaveAnimation = {
-    from: { opacity: 1, transform: 'translateX(0)' },
-    to: { opacity: 0, transform: 'translateX(-50px)' },
+    from: { opacity: '1', transform: 'translateX(0)' },
+    to: { opacity: '0', transform: 'translateX(-50px)' },
 };
 
 export const Root = styled(FlipMove).attrs({

@@ -131,9 +131,9 @@ class Client {
                 // TODO
                 data.gamePhase;
                 if (data.gamePhase === GamePhase.Results) {
-                    this._handleUpdateGamePhase(data.gamePhase, data.answers);
+                    // TODO this._handleUpdateGamePhase(data.gamePhase, data.answers);
                 } else {
-                    this._handleUpdateGamePhase(/* TODO */);
+                    // TODO this._handleUpdateGamePhase(/* TODO */);
                 }
                 break;
             }

@@ -10,7 +10,7 @@ interface ClientPlayer {
 class GameState {
     private _player: ClientPlayer;
     private _disabledAvatars: Set<AvatarImage>;
-    //private _gamePhase: GamePhase;
+    private _gamePhase: GamePhase;
     private _answers: [AvatarImage, AvatarImage] | null;
     private _submissionResults: [SubmissionResult, SubmissionResult] | null;
 
@@ -33,7 +33,7 @@ class GameState {
             name,
         };
         this._disabledAvatars = new Set();
-        //this._gamePhase = ;
+        this._gamePhase = GamePhase.Lobby; // TODO get gamephase on join
         this._answers = null;
         this._submissionResults = null;
         makeAutoObservable(this);

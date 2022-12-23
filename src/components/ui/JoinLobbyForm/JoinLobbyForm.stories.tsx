@@ -1,11 +1,8 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import JoinLobbyForm from '@components/ui/JoinLobbyForm';
 
-const Template: ComponentStory<typeof JoinLobbyForm> = ({
-    onSubmit,
-    ...args
-}) => {
-    const handleSubmit = async (values: { roomCode: string; name: string }) => {
+const Template: ComponentStory<typeof JoinLobbyForm> = ({ onSubmit, ...args }) => {
+    const handleSubmit = async (values: { joinCode: string; name: string }) => {
         await new Promise((resolve) => setTimeout(resolve, 1000));
         onSubmit(values);
     };

@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import AvatarResult, { AvatarResultResult } from '@components/ui/AvatarResult';
-import { AvatarImage } from '@store/common/common.types';
+import AvatarResult from '@components/ui/AvatarResult';
+import { AvatarImage, SubmissionResult } from '@store/common/common.types';
 
 const Template: ComponentStory<typeof AvatarResult> = ({ ...args }) => {
     return <AvatarResult {...args} />;
@@ -20,8 +20,8 @@ export default {
         },
         result: {
             control: 'select',
-            defaultValue: AvatarResultResult.None,
-            options: Object.values(AvatarResultResult),
+            defaultValue: SubmissionResult.None,
+            options: Object.values(SubmissionResult),
         },
     },
 } as ComponentMeta<typeof AvatarResult>;

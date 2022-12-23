@@ -1,4 +1,4 @@
-import type { AvatarImage } from '@components/ui/PlayerAvatar';
+import type { AvatarImage } from '@store/common/common.types';
 
 export enum ClientMessageType {
     Join = 'Join',

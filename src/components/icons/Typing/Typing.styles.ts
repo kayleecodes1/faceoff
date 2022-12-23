@@ -15,7 +15,7 @@ const animation3 = keyframes({
     '60%, 100%': { r: 2.5 },
 });
 
-export const Root = styled.svg<{ size: number }>(({ size, theme }) => ({
+export const Root = styled.svg<{ size: number }>(({ size }) => ({
     width: size,
     height: size,
     fill: 'currentcolor',
@@ -26,7 +26,7 @@ export const Dot = styled.circle<{ position: 1 | 2 | 3 }>(
         r: 2.5,
     },
     css`
-        animation: ${({ position }) =>
+        animation: ${({ position }: { position: 1 | 2 | 3 }) =>
                 ({
                     [1]: animation1,
                     [2]: animation2,
