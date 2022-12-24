@@ -1,6 +1,6 @@
 import { DataConnection, Peer } from 'peerjs';
 import { ClientMessageType, ClientMessage } from '@store/client/Client.types';
-import { AvatarImage, GamePhase } from '@store/common/common.types';
+import { AvatarImage, GamePhase, SubmissionResult, SubmissionState } from '@store/common/common.types';
 import fetchPrompts from '@utilities/fetchPrompts';
 import selectRandomSubset from '@utilities/selectRandomSubset';
 import wait from '@utilities/wait';
@@ -8,11 +8,13 @@ import { HostMessage, HostMessageType } from './Host.types';
 import HostGameState from './HostGameState';
 
 const NUM_PROMPTS = 20;
+const TIMER_DURATION_MS = 30 * 1000;
 
 class Host {
     private _peer: Peer;
     private _playerConnections: Map<string, DataConnection>;
     private _gameState: HostGameState;
+    private _resolveSubmissions?: () => void;
 
     public get gameState() {
         return this._gameState;
@@ -82,48 +84,126 @@ class Host {
             //-------------------------------------------------------------------
             this._gameState.setPrompt(gamePrompts[i]);
             this._setGamePhase(GamePhase.Prompt);
-
-            await wait(2000);
+            await wait(1000);
             this._gameState.showPromptResult();
-
-            //await wait(6000);
+            await wait(2000);
 
             //-------------------------------------------------------------------
             // Submission
             //-------------------------------------------------------------------
-            this._gameState.clearSubmissions();
             this._setGamePhase(GamePhase.Submission);
-            // TODO set timer
-            // TODO wait for all submissions OR timer
+            this._gameState.clearSubmissions();
+            this._gameState.updateSubmissionStates([SubmissionState.Pending]);
 
-            await wait(8000);
+            const startTime = Date.now();
+            const endTime = startTime + TIMER_DURATION_MS;
+            this._gameState.setTimer(startTime, endTime);
+            await Promise.any([
+                wait(TIMER_DURATION_MS),
+                new Promise<void>((resolve) => {
+                    this._resolveSubmissions = resolve;
+                }),
+            ]);
+            delete this._resolveSubmissions;
+            await wait(1000);
+            this._gameState.clearTimer();
+            await wait(1000);
 
             //-------------------------------------------------------------------
             // Results
             //-------------------------------------------------------------------
             this._setGamePhase(GamePhase.Results);
-            // TODO
-            this._gameState.showPromptSourceA();
-            await wait(4000);
             for (const player of this._gameState.players) {
-                // TODO send result to each player
-                // TODO add points to player
+                if (player.submission) {
+                    this._gameState.updateSubmissionState(player.id, [
+                        SubmissionState.Unknown,
+                        SubmissionState.Unknown,
+                    ]);
+                    this._sendMessage(player.id, {
+                        type: HostMessageType.UpdateSubmissionResult,
+                        data: {
+                            results: [SubmissionResult.Unknown, SubmissionResult.Unknown],
+                        },
+                    });
+                } else {
+                    this._gameState.clearSubmissionState(player.id);
+                    this._sendMessage(player.id, {
+                        type: HostMessageType.UpdateSubmissionResult,
+                        data: {
+                            results: [SubmissionResult.None, SubmissionResult.None],
+                        },
+                    });
+                }
             }
-            await wait(4000);
+
+            this._gameState.showPromptSourceA();
+            await wait(2000);
+            const sourceA = this._gameState.promptState?.prompt.sourceA.identity;
+            for (const player of this._gameState.players) {
+                console.log(player.submission);
+                if (player.submission) {
+                    // Update submission state.
+                    const submissionState = player.submission.map((s) =>
+                        s === sourceA ? SubmissionState.Success : SubmissionState.Unknown,
+                    );
+                    this._gameState.updateSubmissionState(player.id, submissionState);
+                    // Send submission result to player.
+                    const results = player.submission.map((s) =>
+                        s === sourceA ? SubmissionResult.Correct : SubmissionResult.Unknown,
+                    ) as [SubmissionResult, SubmissionResult];
+                    this._sendMessage(player.id, {
+                        type: HostMessageType.UpdateSubmissionResult,
+                        data: { results },
+                    });
+                }
+            }
+            await wait(2000);
 
             this._gameState.showPromptSourceB();
-            await wait(4000);
+            await wait(2000);
+            const sourceB = this._gameState.promptState?.prompt.sourceB.identity;
             for (const player of this._gameState.players) {
-                // TODO send result to each player
-                // TODO add points to player
+                if (player.submission) {
+                    // Update submission state.
+                    const submissionState = player.submission.map((s) =>
+                        s === sourceA || s === sourceB ? SubmissionState.Success : SubmissionState.Error,
+                    );
+                    this._gameState.updateSubmissionState(player.id, submissionState);
+                    // Send submission result to player.
+                    const results = player.submission.map((s) =>
+                        s === sourceA || s === sourceB ? SubmissionResult.Correct : SubmissionResult.Incorrect,
+                    ) as [SubmissionResult, SubmissionResult];
+                    this._sendMessage(player.id, {
+                        type: HostMessageType.UpdateSubmissionResult,
+                        data: { results },
+                    });
+                }
             }
-            await wait(4000);
+            await wait(2000);
+
+            // Award points.
+            for (const player of this._gameState.players) {
+                // TODO variable points
+                let points = 0;
+                if (sourceA && player.submission?.includes(sourceA)) {
+                    points += 1;
+                }
+                if (sourceB && player.submission?.includes(sourceB)) {
+                    points += 1;
+                }
+                this._gameState.awardPoints(player.id, points);
+                // TODO slight pause between players
+            }
+            await wait(2000);
+
+            this._gameState.clearSubmissionStates();
+            this._gameState.sortPlayers();
         }
 
         //-------------------------------------------------------------------
         // End
         //-------------------------------------------------------------------
-        // TODO
+        this._setGamePhase(GamePhase.End);
     }
 
     private _setGamePhase(gamePhase: GamePhase) {
@@ -143,34 +223,6 @@ class Host {
             });
         }
     }
-
-    private async executePrompt() {
-        // TODO
-    }
-
-    private async executeSubmission() {
-        // set all submission status to [SubmissionState.Pending]
-        // when submission received, set player submission status to [SubmissionState.Submitted]
-    }
-
-    private async executeResults() {
-        // send phase to each player, with their submissions
-        // set all submission results to [SubmissionState.Unknown, SubmissionState.Unknown]
-        // ...
-        // if all players submitted OR timer runs out, move on
-        // ...
-        // show sourceA
-        // update submission results / points
-        // send result to each player (how to connect Host?)
-        // show sourceB
-        // update submission results / points
-        // send result to each player (how to connect Host?)
-        // sort players by points
-    }
-
-    // TODO make method to send message to players about game phase
-    // will automatically send answers if in Results, otherwise broadcasts phase
-    // can also send to individual, e.g. if they just rejoined and need phase
 
     private _sendMessage(playerId: string, message: HostMessage): void {
         const connection = this._playerConnections.get(playerId);
@@ -299,9 +351,12 @@ class Host {
         if (this._gameState.gamePhase !== GamePhase.Submission) {
             return;
         }
+        // TODO variable points for submission relative to timer
         this._gameState.setSubmission(playerId, answers);
-
-        // TODO do something if this resulted in all submissions being submitted
+        this._gameState.updateSubmissionState(playerId, [SubmissionState.Submitted, SubmissionState.Submitted]);
+        if (this._gameState.players.every(({ submission }) => submission)) {
+            this._resolveSubmissions?.();
+        }
     }
 }
 

@@ -13,3 +13,7 @@ yarn preview
 yarn storybook
 yarn storybook-build
 ```
+
+```
+git subtree push --prefix dist origin gh-pages
+```

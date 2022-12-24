@@ -26,6 +26,14 @@ class GameState {
         return this._gamePhase;
     }
 
+    public get answers(): [AvatarImage, AvatarImage] | null {
+        return this._answers;
+    }
+
+    public get submissionResults(): [SubmissionResult, SubmissionResult] | null {
+        return this._submissionResults;
+    }
+
     constructor(id: string, name: string) {
         this._player = {
             avatarImage: AvatarImage.None,

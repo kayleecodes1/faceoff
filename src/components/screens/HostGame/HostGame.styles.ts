@@ -9,7 +9,7 @@ export const Root = styled.div({
 
 export const Sidebar = styled.div({
     flexShrink: 0,
-    width: 412,
+    width: 450,
 });
 
 export const Content = styled.div({

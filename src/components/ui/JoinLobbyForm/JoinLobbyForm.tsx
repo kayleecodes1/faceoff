@@ -1,4 +1,5 @@
 import { useFormik } from 'formik';
+import React from 'react';
 import * as yup from 'yup';
 import Button from '@components/ui/Button';
 import Input from '@components/ui/Input';
@@ -25,9 +26,14 @@ const JoinLobbyForm: React.FC<JoinLobbyFormProps> = ({ onSubmit }) => {
             joinCode: '',
             name: '',
         },
-        validationSchema,
         onSubmit,
+        validationSchema,
     });
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = event.target;
+        formik.setFieldValue(name, value.toUpperCase());
+    };
 
     return (
         <Root as="form" onSubmit={formik.handleSubmit}>
@@ -39,7 +45,7 @@ const JoinLobbyForm: React.FC<JoinLobbyFormProps> = ({ onSubmit }) => {
                     id="joinCode"
                     maxLength={6}
                     name="joinCode"
-                    onChange={formik.handleChange}
+                    onChange={handleChange}
                     value={formik.values.joinCode}
                 />
             </div>
@@ -51,7 +57,7 @@ const JoinLobbyForm: React.FC<JoinLobbyFormProps> = ({ onSubmit }) => {
                     id="name"
                     maxLength={DISPLAY_NAME_MAX_LENGTH}
                     name="name"
-                    onChange={formik.handleChange}
+                    onChange={handleChange}
                     value={formik.values.name}
                 />
             </div>

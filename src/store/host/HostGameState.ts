@@ -4,20 +4,16 @@ import { AvatarImage, GamePhase, Prompt } from '@store/common/common.types';
 
 interface HostPlayer {
     avatarImage: AvatarImage;
-    displayOrder?: number;
+    displayOrder: number;
     id: string;
     isConnected: boolean;
     name: string;
-    points?: number;
+    points: number;
 }
 
 interface HostPlayerDerived {
     submission: [AvatarImage, AvatarImage] | null;
-    submissionState: SubmissionState[];
-}
-
-interface TimerState {
-    // TODO
+    submissionState: SubmissionState[] | null;
 }
 
 interface PromptState {
@@ -25,6 +21,11 @@ interface PromptState {
     showResult: boolean;
     showSourceA: boolean;
     showSourceB: boolean;
+}
+
+interface TimerState {
+    startTime: number;
+    endTime: number;
 }
 
 class GameState {
@@ -36,19 +37,22 @@ class GameState {
     //private _prompts: Prompt[];
     //private _currentPromptIndex: number;
     private _promptState: PromptState | null;
+    private _timerState: TimerState | null;
     private _submissions: Map<string, [AvatarImage, AvatarImage]>;
+    private _submissionStates: Map<string, SubmissionState[]>;
 
     public get joinCode(): string {
         return this._joinCode;
     }
 
     public get players(): (HostPlayer & HostPlayerDerived)[] {
-        return Array.from(this._players.values()).map((player) => ({
-            ...player,
-            submission: this._submissions.get(player.id) || null,
-            submissionState: this._submissionStates.get(player.id) || [],
-        }));
-        // TODO sort
+        return Array.from(this._players.values())
+            .map((player) => ({
+                ...player,
+                submission: this._submissions.get(player.id) || null,
+                submissionState: this._submissionStates.get(player.id) || null,
+            }))
+            .sort((a, b) => b.displayOrder - a.displayOrder);
     }
 
     public get disabledNames(): Set<string> {
@@ -71,17 +75,16 @@ class GameState {
         return this._promptState;
     }
 
+    public get timerState(): TimerState | null {
+        return this._timerState;
+    }
+
     public get submissions(): Map<string, [AvatarImage, AvatarImage]> {
         return this._submissions;
     }
 
-    private get _submissionStates(): Map<string, SubmissionState[]> {
-        // if GamePhase.Submission, SubmissionState.Pending if no _submissions, else SubmissionState.Submitted
-        // if GamePhase.Results, calculate SubmissionState.Unknown SubmissionState.Success SubmissionState.Error
-        //      based on promptState and submissions
-        // else empty
-
-        return new Map();
+    public get submissionStates(): Map<string, SubmissionState[]> {
+        return this._submissionStates;
     }
 
     /*
@@ -99,7 +102,9 @@ class GameState {
         //this._prompts = prompts;
         //this._currentPromptIndex = 0;
         this._promptState = null;
+        this._timerState = null;
         this._submissions = new Map();
+        this._submissionStates = new Map();
         makeAutoObservable(this);
     }
 
@@ -111,9 +116,11 @@ class GameState {
         // TODO play sound
         this._players.set(playerId, {
             avatarImage: AvatarImage.None,
+            displayOrder: 10000,
             id: playerId,
             isConnected: true,
             name,
+            points: 0,
         });
     }
 
@@ -165,6 +172,14 @@ class GameState {
         }
     }
 
+    setTimer(startTime: number, endTime: number) {
+        this._timerState = { startTime, endTime };
+    }
+
+    clearTimer() {
+        this._timerState = null;
+    }
+
     setSubmission(playerId: string, answers: [AvatarImage, AvatarImage]) {
         this._submissions.set(playerId, answers);
     }
@@ -173,12 +188,38 @@ class GameState {
         this._submissions.clear();
     }
 
-    /*
-
-    sortPlayers() {
-        // update displayOrder based on points, fall back to order in map
+    updateSubmissionStates(submissionState: SubmissionState[]) {
+        for (const player of this._players.values()) {
+            this._submissionStates.set(player.id, [...submissionState]);
+        }
     }
 
+    clearSubmissionStates() {
+        this._submissionStates.clear();
+    }
+
+    updateSubmissionState(playerId: string, submissionState: SubmissionState[]) {
+        this._submissionStates.set(playerId, submissionState);
+    }
+
+    clearSubmissionState(playerId: string) {
+        this._submissionStates.delete(playerId);
+    }
+
+    awardPoints(playerId: string, points: number) {
+        const player = this._players.get(playerId);
+        if (player) {
+            player.points += points;
+        }
+    }
+
+    sortPlayers() {
+        for (const player of this._players.values()) {
+            player.displayOrder = player.points;
+        }
+    }
+
+    /*
     updateSubmissionStateAll() {
         //
     }

@@ -1,16 +1,15 @@
 import { observer } from 'mobx-react-lite';
+import React, { useState } from 'react';
 import AvatarSelect from '@components/ui/AvatarSelect';
 import ChangeNameForm from '@components/ui/ChangeNameForm';
+import SubmissionForm from '@components/ui/SubmissionForm';
+import AvatarResult from '@components/ui/AvatarResult';
 import { useClient } from '@contexts/ClientContext';
-import { AvatarImage } from '@store/common/common.types';
+import { AvatarImage, GamePhase, SubmissionResult } from '@store/common/common.types';
 import { Root, Container } from './ClientGame.styles';
 
-const ClientGame: React.FC = () => {
+const ClientLobby: React.FC = observer(() => {
     const client = useClient();
-
-    const handleLeave = () => {
-        client.leave();
-    };
 
     const handleChangeName = (name: string) => {
         client.updateName(name);
@@ -21,15 +20,77 @@ const ClientGame: React.FC = () => {
     };
 
     return (
+        <>
+            <ChangeNameForm onSubmit={handleChangeName} value={client.gameState.player.name} />
+            <AvatarSelect
+                disabledValues={client.gameState.disabledAvatars}
+                onChange={handleChangeAvatar}
+                value={client.gameState.player.avatarImage}
+            />
+        </>
+    );
+});
+
+const ClientSubmissionForm: React.FC = observer(() => {
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
+    const client = useClient();
+
+    const handleSubmit = async (values: { answers: [AvatarImage, AvatarImage] }) => {
+        client.submitAnswers(values.answers);
+        setIsSubmitted(true);
+    };
+
+    return isSubmitted ? null : <SubmissionForm onSubmit={handleSubmit} />;
+});
+
+const ClientResults: React.FC = observer(() => {
+    const client = useClient();
+
+    const { answers, submissionResults } = client.gameState;
+
+    return (
+        <div style={{ display: 'flex', flexFlow: 'row nowrap', gap: 32, width: 'fit-content', margin: '0 auto' }}>
+            <AvatarResult
+                avatar={answers?.[0] || AvatarImage.None}
+                result={submissionResults?.[0] || SubmissionResult.None}
+            />
+            <AvatarResult
+                avatar={answers?.[1] || AvatarImage.None}
+                result={submissionResults?.[1] || SubmissionResult.None}
+            />
+        </div>
+    );
+});
+
+const ClientContent: React.FC = observer(() => {
+    const client = useClient();
+
+    switch (client.gameState.gamePhase) {
+        case GamePhase.Lobby: {
+            return <ClientLobby />;
+        }
+        case GamePhase.Prompt: {
+            return null;
+        }
+        case GamePhase.Submission: {
+            return <ClientSubmissionForm />;
+        }
+        case GamePhase.Results: {
+            return <ClientResults />;
+        }
+        case GamePhase.End: {
+            // TODO
+            return null;
+        }
+    }
+});
+
+const ClientGame: React.FC = () => {
+    return (
         <Root>
             <Container>
-                <button onClick={handleLeave}>Leave</button>
-                <ChangeNameForm onSubmit={handleChangeName} value={client.gameState.player.name} />
-                <AvatarSelect
-                    disabledValues={client.gameState.disabledAvatars}
-                    onChange={handleChangeAvatar}
-                    value={client.gameState.player.avatarImage}
-                />
+                <ClientContent />
             </Container>
         </Root>
     );

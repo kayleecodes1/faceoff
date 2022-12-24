@@ -128,12 +128,11 @@ class Client {
                 break;
             }
             case HostMessageType.UpdateGamePhase: {
-                // TODO
-                data.gamePhase;
                 if (data.gamePhase === GamePhase.Results) {
-                    // TODO this._handleUpdateGamePhase(data.gamePhase, data.answers);
+                    const foo = data as { gamePhase: GamePhase.Results; answers: [AvatarImage, AvatarImage] };
+                    this._handleUpdateGamePhase(data.gamePhase as GamePhase.Results, foo.answers);
                 } else {
-                    // TODO this._handleUpdateGamePhase(/* TODO */);
+                    this._handleUpdateGamePhase(data.gamePhase as GamePhase);
                 }
                 break;
             }
@@ -160,13 +159,15 @@ class Client {
 
     private _handleUpdateGamePhase(gamePhase: GamePhase): void;
     private _handleUpdateGamePhase(gamePhase: GamePhase.Results, answers: [AvatarImage, AvatarImage]): void;
-    private _handleUpdateGamePhase() {
-        // TODO update game phase, reset any state that needs resetting
-        // TODO if gamePhase === results, also update answers
+    private _handleUpdateGamePhase(gamePhase: GamePhase, answers?: [AvatarImage, AvatarImage]) {
+        this.gameState.updateGamePhase(gamePhase);
+        if (answers) {
+            this._gameState.updateAnswers(answers);
+        }
     }
 
     private _handleUpdateSubmissionResult(results: [SubmissionResult, SubmissionResult]) {
-        // TODO
+        this._gameState.updateSubmissionResults(results);
     }
 }
 

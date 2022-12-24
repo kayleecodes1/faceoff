@@ -1,12 +1,15 @@
 import { observer } from 'mobx-react-lite';
+import { useHost } from '@contexts/HostContext';
 import PlayerCard from '@components/ui/PlayerCard';
 import PlayerListComponent from '@components/ui/PlayerList';
 import SubmissionStatus from '@components/ui/SubmissionStatus';
+import { GamePhase } from '@store/common/common.types';
 import { Root } from './PlayerList.styles';
-import { useHost } from '@contexts/HostContext';
 
 const PlayerList: React.FC = () => {
     const host = useHost();
+
+    const doShowPoints = host.gameState.gamePhase !== GamePhase.Lobby;
 
     return (
         <Root>
@@ -21,7 +24,7 @@ const PlayerList: React.FC = () => {
                             gap: 16,
                         }}
                     >
-                        <PlayerCard avatarImage={avatarImage} name={name} points={points} />
+                        <PlayerCard avatarImage={avatarImage} name={name} points={doShowPoints ? points : undefined} />
                         {submissionState && (
                             <SubmissionStatus>
                                 {submissionState.map((state, index) => (
