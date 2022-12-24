@@ -3,20 +3,10 @@ import UiTimer, { TimerProps as UiTimerProps } from '@components/ui/Timer';
 
 const WARN_DURATION = 10;
 
-const computeTimerProps = (
-    startTime: number,
-    endTime: number,
-    currentTime: number,
-): UiTimerProps => {
+const computeTimerProps = (startTime: number, endTime: number, currentTime: number): UiTimerProps => {
     const timeLimit = (endTime - startTime) / 1000;
-    const timeElapsed = Math.max(
-        0,
-        Math.min(timeLimit, (currentTime - startTime) / 1000),
-    );
-    const variant =
-        timeLimit - timeElapsed > WARN_DURATION || timeElapsed === timeLimit
-            ? 'default'
-            : 'warn';
+    const timeElapsed = Math.max(0, Math.min(timeLimit, (currentTime - startTime) / 1000));
+    const variant = timeLimit - timeElapsed > WARN_DURATION || timeElapsed === timeLimit ? 'default' : 'warn';
     return { timeElapsed, timeLimit, variant };
 };
 
@@ -26,9 +16,7 @@ interface TimerProps {
 }
 
 const Timer: React.FC<TimerProps> = ({ startTime, endTime }) => {
-    const [timerProps, setTimerProps] = useState<UiTimerProps>(
-        computeTimerProps(startTime, endTime, Date.now()),
-    );
+    const [timerProps, setTimerProps] = useState<UiTimerProps>(computeTimerProps(startTime, endTime, Date.now()));
 
     useEffect(() => {
         let requestId = -1;
@@ -42,7 +30,7 @@ const Timer: React.FC<TimerProps> = ({ startTime, endTime }) => {
         };
     }, [startTime, endTime]);
 
-    return <UiTimer {...timerProps} />;
+    return <UiTimer numDivisions={3} {...timerProps} />;
 };
 
 export default Timer;

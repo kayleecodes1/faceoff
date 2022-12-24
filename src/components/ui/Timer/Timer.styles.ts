@@ -31,20 +31,26 @@ export const Label = styled.div<{ variant?: 'default' | 'warn' }>(
         `,
 );
 
-export const ProgressBar = styled.div<{ progress: number }>(
-    ({ progress, theme }) => ({
-        position: 'relative',
-        width: 360,
-        height: 36,
-        background: theme.colors.primaryLighter,
-        borderRadius: 8,
-        overflow: 'hidden',
-        '&::before': {
-            content: '""',
-            position: 'absolute',
-            inset: '0 auto 0 0',
-            width: `${progress * 100}%`,
-            background: theme.colors.primary,
-        },
-    }),
-);
+export const ProgressBar = styled.div<{ progress: number }>(({ progress, theme }) => ({
+    position: 'relative',
+    width: 360,
+    height: 36,
+    background: theme.colors.primaryLighter,
+    borderRadius: 8,
+    overflow: 'hidden',
+    '&::before': {
+        content: '""',
+        position: 'absolute',
+        inset: '0 auto 0 0',
+        width: `${progress * 100}%`,
+        background: theme.colors.primary,
+    },
+}));
+
+export const Divider = styled.div(({ theme }) => ({
+    position: 'absolute',
+    top: 0,
+    width: 2,
+    height: '100%',
+    background: theme.colors.primaryLight,
+}));

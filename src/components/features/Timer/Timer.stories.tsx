@@ -13,6 +13,6 @@ export default {
     component: Timer,
     argTypes: {
         startTime: { control: 'number', defaultValue: Date.now() },
-        endTime: { control: 'number', defaultValue: Date.now() + 60000 },
+        endTime: { control: 'number', defaultValue: Date.now() + 30000 },
     },
 } as ComponentMeta<typeof Timer>;

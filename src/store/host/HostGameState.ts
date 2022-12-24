@@ -11,8 +11,13 @@ interface HostPlayer {
     points: number;
 }
 
+interface SubmissionData {
+    answers: [AvatarImage, AvatarImage];
+    t: number;
+}
+
 interface HostPlayerDerived {
-    submission: [AvatarImage, AvatarImage] | null;
+    submission: SubmissionData | null;
     submissionState: SubmissionState[] | null;
 }
 
@@ -38,7 +43,7 @@ class GameState {
     //private _currentPromptIndex: number;
     private _promptState: PromptState | null;
     private _timerState: TimerState | null;
-    private _submissions: Map<string, [AvatarImage, AvatarImage]>;
+    private _submissions: Map<string, SubmissionData>;
     private _submissionStates: Map<string, SubmissionState[]>;
 
     public get joinCode(): string {
@@ -79,7 +84,7 @@ class GameState {
         return this._timerState;
     }
 
-    public get submissions(): Map<string, [AvatarImage, AvatarImage]> {
+    public get submissions(): Map<string, SubmissionData> {
         return this._submissions;
     }
 
@@ -180,8 +185,8 @@ class GameState {
         this._timerState = null;
     }
 
-    setSubmission(playerId: string, answers: [AvatarImage, AvatarImage]) {
-        this._submissions.set(playerId, answers);
+    setSubmission(playerId: string, answers: [AvatarImage, AvatarImage], t: number) {
+        this._submissions.set(playerId, { answers, t });
     }
 
     clearSubmissions() {

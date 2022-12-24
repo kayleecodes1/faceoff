@@ -9,6 +9,17 @@ import HostGameState from './HostGameState';
 
 const NUM_PROMPTS = 20;
 const TIMER_DURATION_MS = 30 * 1000;
+const MAX_POINTS_PER_ANSWER = 5;
+
+const calculatePoints = (t: number) => {
+    if (t > 0.666) {
+        return 3;
+    } else if (t > 0.333) {
+        return 2;
+    } else {
+        return 1;
+    }
+};
 
 class Host {
     private _peer: Peer;
@@ -143,18 +154,19 @@ class Host {
                 console.log(player.submission);
                 if (player.submission) {
                     // Update submission state.
-                    const submissionState = player.submission.map((s) =>
+                    const submissionState = player.submission.answers.map((s) =>
                         s === sourceA ? SubmissionState.Success : SubmissionState.Unknown,
                     );
                     this._gameState.updateSubmissionState(player.id, submissionState);
                     // Send submission result to player.
-                    const results = player.submission.map((s) =>
+                    const results = player.submission.answers.map((s) =>
                         s === sourceA ? SubmissionResult.Correct : SubmissionResult.Unknown,
                     ) as [SubmissionResult, SubmissionResult];
                     this._sendMessage(player.id, {
                         type: HostMessageType.UpdateSubmissionResult,
                         data: { results },
                     });
+                    await wait(250); // TODO: test this domino pause
                 }
             }
             await wait(2000);
@@ -165,18 +177,19 @@ class Host {
             for (const player of this._gameState.players) {
                 if (player.submission) {
                     // Update submission state.
-                    const submissionState = player.submission.map((s) =>
+                    const submissionState = player.submission.answers.map((s) =>
                         s === sourceA || s === sourceB ? SubmissionState.Success : SubmissionState.Error,
                     );
                     this._gameState.updateSubmissionState(player.id, submissionState);
                     // Send submission result to player.
-                    const results = player.submission.map((s) =>
+                    const results = player.submission.answers.map((s) =>
                         s === sourceA || s === sourceB ? SubmissionResult.Correct : SubmissionResult.Incorrect,
                     ) as [SubmissionResult, SubmissionResult];
                     this._sendMessage(player.id, {
                         type: HostMessageType.UpdateSubmissionResult,
                         data: { results },
                     });
+                    await wait(250); // TODO: test this domino pause
                 }
             }
             await wait(2000);
@@ -185,14 +198,14 @@ class Host {
             for (const player of this._gameState.players) {
                 // TODO variable points
                 let points = 0;
-                if (sourceA && player.submission?.includes(sourceA)) {
-                    points += 1;
+                if (sourceA && player.submission?.answers.includes(sourceA)) {
+                    points += calculatePoints(player.submission.t);
                 }
-                if (sourceB && player.submission?.includes(sourceB)) {
-                    points += 1;
+                if (sourceB && player.submission?.answers.includes(sourceB)) {
+                    points += calculatePoints(player.submission.t);
                 }
                 this._gameState.awardPoints(player.id, points);
-                // TODO slight pause between players
+                await wait(250); // TODO: test this domino pause
             }
             await wait(2000);
 
@@ -210,7 +223,7 @@ class Host {
         this._gameState.setGamePhase(gamePhase);
         if (gamePhase === GamePhase.Results) {
             for (const { id, submission } of this._gameState.players) {
-                const answers = submission || [AvatarImage.None, AvatarImage.None];
+                const answers = submission?.answers || [AvatarImage.None, AvatarImage.None];
                 this._sendMessage(id, {
                     type: HostMessageType.UpdateGamePhase,
                     data: { gamePhase, answers },
@@ -351,8 +364,12 @@ class Host {
         if (this._gameState.gamePhase !== GamePhase.Submission) {
             return;
         }
-        // TODO variable points for submission relative to timer
-        this._gameState.setSubmission(playerId, answers);
+        if (!this._gameState.timerState) {
+            return;
+        }
+        const { startTime, endTime } = this._gameState.timerState;
+        const t = 1 - (Date.now() - startTime) / (endTime - startTime);
+        this._gameState.setSubmission(playerId, answers, t);
         this._gameState.updateSubmissionState(playerId, [SubmissionState.Submitted, SubmissionState.Submitted]);
         if (this._gameState.players.every(({ submission }) => submission)) {
             this._resolveSubmissions?.();

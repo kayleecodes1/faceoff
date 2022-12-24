@@ -10,6 +10,7 @@ export default {
     title: 'UI/Timer',
     component: Timer,
     argTypes: {
+        numDivisions: { control: 'number', defaultValue: 3 },
         timeElapsed: { control: 'number', defaultValue: 45 },
         timeLimit: { control: 'number', defaultValue: 60 },
         variant: {
