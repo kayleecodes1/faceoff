@@ -22,6 +22,7 @@ const PlayerList: React.FC = () => {
                             flexFlow: 'row nowrap',
                             alignItems: 'center',
                             gap: 16,
+                            opacity: isConnected ? 1 : 0.7,
                         }}
                     >
                         <PlayerCard avatarImage={avatarImage} name={name} points={doShowPoints ? points : undefined} />

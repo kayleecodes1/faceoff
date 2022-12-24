@@ -23,6 +23,7 @@
             "@constants/*": ["./src/constants/*"],
             "@contexts/*": ["./src/contexts/*"],
             "@data/*": ["./src/data/*"],
+            "@hooks/*": ["./src/hooks/*"],
             "@store/*": ["./src/store/*"],
             "@styles/*": ["./src/styles/*"],
             "@utilities/*": ["./src/utilities/*"]

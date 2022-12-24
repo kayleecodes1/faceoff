@@ -1,6 +1,7 @@
 import PlayerAvatar from '@components/ui/PlayerAvatar';
+import usePreviousValue from '@hooks/usePreviousValue';
 import { AvatarImage } from '@store/common/common.types';
-import { Root, AvatarContainer, Name, Points } from './PlayerCard.styles';
+import { Root, AvatarContainer, Name, Points, PointsValue, PointsDelta } from './PlayerCard.styles';
 
 interface PlayerCardProps {
     avatarImage?: AvatarImage;
@@ -15,6 +16,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     name,
     points,
 }) => {
+    const previousPoints = usePreviousValue(points);
+    const deltaPoints = (points || 0) - (previousPoints || 0);
+
     return (
         <Root isConnected={isConnected}>
             <AvatarContainer>
@@ -22,7 +26,14 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </AvatarContainer>
             <Name>{name}</Name>
             {typeof points !== 'undefined' && (
-                <Points key={points}>{points}</Points>
+                <Points>
+                    <PointsValue key={points}>{points}</PointsValue>
+                    {Boolean(deltaPoints) && (
+                        <PointsDelta key={`${points}:${deltaPoints}`}>
+                            {deltaPoints > 0 ? `+${deltaPoints}` : deltaPoints}
+                        </PointsDelta>
+                    )}
+                </Points>
             )}
         </Root>
     );

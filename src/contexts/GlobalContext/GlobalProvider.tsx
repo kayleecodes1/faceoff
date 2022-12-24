@@ -4,6 +4,8 @@ import Host from '@store/host/Host';
 import generateJoinCode from '@utilities/generateJoinCode';
 import GlobalContext, { ClientState, HostState } from './GlobalContext';
 
+const LOCAL_STORAGE_KEY_JOIN_FORM = 'FaceOff::joinForm';
+
 interface GlobalProviderProps {
     children?: React.ReactNode;
 }
@@ -43,12 +45,14 @@ const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
         try {
             const client = await Client.create(joinCode, name);
             setClientState((previousState) => ({ ...previousState, client }));
+            localStorage.setItem(LOCAL_STORAGE_KEY_JOIN_FORM, JSON.stringify({ joinCode, name }));
         } catch (error) {
             console.log(error);
             setClientState((previousState) => ({
                 ...previousState,
                 error: String(error),
             }));
+            localStorage.removeItem(LOCAL_STORAGE_KEY_JOIN_FORM);
         }
         setClientState((previousState) => ({
             ...previousState,

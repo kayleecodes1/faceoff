@@ -166,7 +166,12 @@ class Host {
                         type: HostMessageType.UpdateSubmissionResult,
                         data: { results },
                     });
-                    await wait(250); // TODO: test this domino pause
+                    await wait(400);
+                    if (sourceA && player.submission?.answers.includes(sourceA)) {
+                        const points = calculatePoints(player.submission.t);
+                        this._gameState.awardPoints(player.id, points);
+                    }
+                    await wait(800); // TODO: test this domino pause
                 }
             }
             await wait(2000);
@@ -189,11 +194,17 @@ class Host {
                         type: HostMessageType.UpdateSubmissionResult,
                         data: { results },
                     });
-                    await wait(250); // TODO: test this domino pause
+                    await wait(400);
+                    if (sourceB && player.submission?.answers.includes(sourceB)) {
+                        const points = calculatePoints(player.submission.t);
+                        this._gameState.awardPoints(player.id, points);
+                    }
+                    await wait(800); // TODO: test this domino pause
                 }
             }
             await wait(2000);
 
+            /* TODO: remove
             // Award points.
             for (const player of this._gameState.players) {
                 // TODO variable points
@@ -205,9 +216,10 @@ class Host {
                     points += calculatePoints(player.submission.t);
                 }
                 this._gameState.awardPoints(player.id, points);
-                await wait(250); // TODO: test this domino pause
+                await wait(800); // TODO: test this domino pause
             }
             await wait(2000);
+            */
 
             this._gameState.clearSubmissionStates();
             this._gameState.sortPlayers();
@@ -280,25 +292,32 @@ class Host {
     }
 
     private _handleJoin(playerId: string, name: string) {
-        //if (playerId)
         // TODO allowed to join with existing name if player id matches and that player is disconnected
+        // this._gameState.updatePlayer(playerId, { isConnected: true });
 
-        // TODO if game in progress, JoinError
-
-        const isTaken = this._gameState.disabledNames.has(name);
-        if (isTaken) {
+        if (this._gameState.gamePhase === GamePhase.Lobby) {
+            const isTaken = this._gameState.disabledNames.has(name);
+            if (isTaken) {
+                this._sendMessage(playerId, {
+                    type: HostMessageType.JoinError,
+                    data: {
+                        message: 'That name is already taken',
+                    },
+                });
+            } else {
+                this._gameState.addPlayer(playerId, name);
+                this._sendMessage(playerId, {
+                    type: HostMessageType.JoinSuccess,
+                    data: {
+                        disabledAvatars: Array.from(this._gameState.disabledAvatars),
+                    },
+                });
+            }
+        } else {
             this._sendMessage(playerId, {
                 type: HostMessageType.JoinError,
                 data: {
-                    message: 'That name is already taken',
-                },
-            });
-        } else {
-            this._gameState.addPlayer(playerId, name);
-            this._sendMessage(playerId, {
-                type: HostMessageType.JoinSuccess,
-                data: {
-                    disabledAvatars: Array.from(this._gameState.disabledAvatars),
+                    message: 'Game has already started',
                 },
             });
         }
@@ -309,11 +328,11 @@ class Host {
     }
 
     private _handleDisconnect(playerId: string) {
-        // TODO
-        // if game started
-        // this._gameState.updatePlayer(playerId, { isConnected: false });
-        // otherwise
-        this._gameState.removePlayer(playerId);
+        if (this._gameState.gamePhase === GamePhase.Lobby) {
+            this._gameState.removePlayer(playerId);
+        } else {
+            this._gameState.updatePlayer(playerId, { isConnected: false });
+        }
     }
 
     private _handleUpdateName(playerId: string, name: string) {
@@ -370,7 +389,7 @@ class Host {
         const { startTime, endTime } = this._gameState.timerState;
         const t = 1 - (Date.now() - startTime) / (endTime - startTime);
         this._gameState.setSubmission(playerId, answers, t);
-        this._gameState.updateSubmissionState(playerId, [SubmissionState.Submitted, SubmissionState.Submitted]);
+        this._gameState.updateSubmissionState(playerId, [SubmissionState.Submitted]);
         if (this._gameState.players.every(({ submission }) => submission)) {
             this._resolveSubmissions?.();
         }
