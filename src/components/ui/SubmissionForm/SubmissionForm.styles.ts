@@ -43,7 +43,10 @@ export const AvatarInput = styled.input<{
     isSelected?: boolean;
 }>(({ isSelected }) => ({
     position: 'absolute',
-    inset: '0 0 0 0',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
     opacity: 0,
     zIndex: 10,
     cursor: isSelected ? 'default' : 'pointer',
