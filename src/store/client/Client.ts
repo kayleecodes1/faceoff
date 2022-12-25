@@ -29,7 +29,7 @@ class Client {
     }
 
     public static async create(joinCode: string, name: string): Promise<Client> {
-        const peer = new Peer(); // _peer.id PROVIDE ID, so we can store it for later
+        const peer = new Peer();
 
         // Connect to peer server.
         await new Promise((resolve, reject) => {
@@ -47,8 +47,6 @@ class Client {
         });
         connection.removeAllListeners();
 
-        const gameState = new ClientGameState(peer.id, name);
-
         // Send join request and wait for response.
         await new Promise<void>((resolve, reject) => {
             connection.send({
@@ -59,7 +57,6 @@ class Client {
                 const { type, data } = message as HostMessage;
                 switch (type) {
                     case HostMessageType.JoinSuccess: {
-                        gameState.updateDisabledAvatars(data.disabledAvatars);
                         resolve();
                         break;
                     }
@@ -72,6 +69,7 @@ class Client {
         });
         connection.removeAllListeners();
 
+        const gameState = new ClientGameState(peer.id, name);
         const client = new Client(peer, connection, gameState);
         return client;
     }
@@ -99,9 +97,7 @@ class Client {
         });
     }
 
-    // TODO use on front end
     public submitAnswers(answers: [AvatarImage, AvatarImage]) {
-        // TODO update form submission state
         this._sendMessage({
             type: ClientMessageType.SubmitAnswers,
             data: { answers },

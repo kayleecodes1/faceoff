@@ -1,9 +1,8 @@
 import { observer } from 'mobx-react-lite';
-import Timer from '@components/features/Timer';
 import Button from '@components/ui/Button';
 import JoinCodeDisplay from '@components/ui/JoinCodeDisplay';
 import PlayerList from '@components/features/PlayerList';
-import Prompt from '@components/ui/Prompt';
+import RoundDisplay from '@components/features/RoundDisplay';
 import { useHost } from '@contexts/HostContext';
 import { GamePhase } from '@store/common/common.types';
 import { Root, Sidebar, Content } from './HostGame.styles';
@@ -29,13 +28,7 @@ const HostContent: React.FC = observer(() => {
         case GamePhase.Prompt:
         case GamePhase.Submission:
         case GamePhase.Results: {
-            const { promptState, timerState } = host.gameState;
-            return (
-                <>
-                    {timerState && <Timer {...timerState} />}
-                    {promptState && <Prompt {...promptState} />}
-                </>
-            );
+            return <RoundDisplay />;
         }
         case GamePhase.End: {
             // TODO

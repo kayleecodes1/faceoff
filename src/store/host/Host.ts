@@ -6,10 +6,10 @@ import selectRandomSubset from '@utilities/selectRandomSubset';
 import wait from '@utilities/wait';
 import { HostMessage, HostMessageType } from './Host.types';
 import HostGameState from './HostGameState';
+import SoundManager from './SoundManager';
 
 const NUM_PROMPTS = 20;
 const TIMER_DURATION_MS = 30 * 1000;
-const MAX_POINTS_PER_ANSWER = 5;
 
 const calculatePoints = (t: number) => {
     if (t > 0.666) {
@@ -62,7 +62,7 @@ class Host {
         const connectionId = this.getConnectionId(joinCode);
         const peer = new Peer(connectionId);
         const playerConnections = new Map();
-        const gameState = new HostGameState(joinCode);
+        const gameState = new HostGameState(joinCode, NUM_PROMPTS);
 
         // Connect to peer server.
         await new Promise<void>((resolve, reject) => {
@@ -83,13 +83,13 @@ class Host {
         // TODO make sure this can't be run multiple times
 
         // LATER: count down
-        // TODO store prompts
 
         // Fetch and store prompts.
         const prompts = await fetchPrompts();
         const gamePrompts = selectRandomSubset(prompts, NUM_PROMPTS);
 
         for (let i = 0; i < gamePrompts.length; i++) {
+            this._gameState.setCurrentRound(i + 1);
             //-------------------------------------------------------------------
             // Prompt
             //-------------------------------------------------------------------
@@ -97,6 +97,8 @@ class Host {
             this._setGamePhase(GamePhase.Prompt);
             await wait(1000);
             this._gameState.showPromptResult();
+            // TODO wait so sound lines up better?
+            SoundManager.playOneShot(SoundManager.OneShot.PromptReveal);
             await wait(2000);
 
             //-------------------------------------------------------------------
@@ -106,15 +108,41 @@ class Host {
             this._gameState.clearSubmissions();
             this._gameState.updateSubmissionStates([SubmissionState.Pending]);
 
+            // Run timer.
             const startTime = Date.now();
             const endTime = startTime + TIMER_DURATION_MS;
             this._gameState.setTimer(startTime, endTime);
+            SoundManager.playOneShot(SoundManager.OneShot.TimerStart);
+            const stopTimerSound = SoundManager.playLoop(SoundManager.Loop.Timer);
+            // -------
+            let allSubmissionsReceived = false;
+            // Wait for timer or all submissions.
             await Promise.any([
-                wait(TIMER_DURATION_MS),
+                (async () => {
+                    await wait(TIMER_DURATION_MS / 3);
+                    if (allSubmissionsReceived) {
+                        return;
+                    }
+                    SoundManager.playOneShot(SoundManager.OneShot.TimerWarning);
+                    await wait(TIMER_DURATION_MS / 3);
+                    if (allSubmissionsReceived) {
+                        return;
+                    }
+                    SoundManager.playOneShot(SoundManager.OneShot.TimerWarning);
+                    await wait(TIMER_DURATION_MS / 3);
+                    if (allSubmissionsReceived) {
+                        return;
+                    }
+                    SoundManager.playOneShot(SoundManager.OneShot.TimerDoneAlarm);
+                })(),
                 new Promise<void>((resolve) => {
                     this._resolveSubmissions = resolve;
+                }).then(() => {
+                    allSubmissionsReceived = true;
                 }),
             ]);
+            stopTimerSound();
+            SoundManager.playOneShot(SoundManager.OneShot.TimerDone);
             delete this._resolveSubmissions;
             await wait(1000);
             this._gameState.clearTimer();
@@ -148,16 +176,22 @@ class Host {
             }
 
             this._gameState.showPromptSourceA();
+            // TODO wait so sound lines up better?
+            SoundManager.playOneShot(SoundManager.OneShot.AnswerReveal);
             await wait(2000);
             const sourceA = this._gameState.promptState?.prompt.sourceA.identity;
             for (const player of this._gameState.players) {
-                console.log(player.submission);
                 if (player.submission) {
+                    const isCorrect = sourceA && player.submission.answers.includes(sourceA);
                     // Update submission state.
-                    const submissionState = player.submission.answers.map((s) =>
-                        s === sourceA ? SubmissionState.Success : SubmissionState.Unknown,
-                    );
+                    const submissionState = [
+                        isCorrect ? SubmissionState.Success : SubmissionState.Error,
+                        SubmissionState.Unknown,
+                    ];
                     this._gameState.updateSubmissionState(player.id, submissionState);
+                    SoundManager.playOneShot(
+                        isCorrect ? SoundManager.OneShot.ResultCorrect : SoundManager.OneShot.ResultIncorrect,
+                    );
                     // Send submission result to player.
                     const results = player.submission.answers.map((s) =>
                         s === sourceA ? SubmissionResult.Correct : SubmissionResult.Unknown,
@@ -166,26 +200,36 @@ class Host {
                         type: HostMessageType.UpdateSubmissionResult,
                         data: { results },
                     });
-                    await wait(400);
-                    if (sourceA && player.submission?.answers.includes(sourceA)) {
+                    // Award points.
+                    await wait(300);
+                    if (isCorrect) {
                         const points = calculatePoints(player.submission.t);
                         this._gameState.awardPoints(player.id, points);
+                        SoundManager.playOneShot(SoundManager.OneShot.Points);
                     }
-                    await wait(800); // TODO: test this domino pause
+                    await wait(300);
                 }
             }
             await wait(2000);
 
             this._gameState.showPromptSourceB();
+            // TODO wait so sound lines up better?
+            SoundManager.playOneShot(SoundManager.OneShot.AnswerReveal);
             await wait(2000);
             const sourceB = this._gameState.promptState?.prompt.sourceB.identity;
             for (const player of this._gameState.players) {
                 if (player.submission) {
+                    const isCorrectA = sourceA && player.submission.answers.includes(sourceA);;
+                    const isCorrectB = sourceB && player.submission.answers.includes(sourceB);
                     // Update submission state.
-                    const submissionState = player.submission.answers.map((s) =>
-                        s === sourceA || s === sourceB ? SubmissionState.Success : SubmissionState.Error,
-                    );
+                    const submissionState = [
+                        isCorrectA ? SubmissionState.Success : SubmissionState.Error,
+                        isCorrectB ? SubmissionState.Success : SubmissionState.Error,
+                    ];
                     this._gameState.updateSubmissionState(player.id, submissionState);
+                    SoundManager.playOneShot(
+                        isCorrectB ? SoundManager.OneShot.ResultCorrect : SoundManager.OneShot.ResultIncorrect,
+                    );
                     // Send submission result to player.
                     const results = player.submission.answers.map((s) =>
                         s === sourceA || s === sourceB ? SubmissionResult.Correct : SubmissionResult.Incorrect,
@@ -194,32 +238,17 @@ class Host {
                         type: HostMessageType.UpdateSubmissionResult,
                         data: { results },
                     });
-                    await wait(400);
-                    if (sourceB && player.submission?.answers.includes(sourceB)) {
+                    // Award points.
+                    await wait(300);
+                    if (isCorrectB) {
                         const points = calculatePoints(player.submission.t);
                         this._gameState.awardPoints(player.id, points);
+                        SoundManager.playOneShot(SoundManager.OneShot.Points);
                     }
-                    await wait(800); // TODO: test this domino pause
+                    await wait(300);
                 }
             }
             await wait(2000);
-
-            /* TODO: remove
-            // Award points.
-            for (const player of this._gameState.players) {
-                // TODO variable points
-                let points = 0;
-                if (sourceA && player.submission?.answers.includes(sourceA)) {
-                    points += calculatePoints(player.submission.t);
-                }
-                if (sourceB && player.submission?.answers.includes(sourceB)) {
-                    points += calculatePoints(player.submission.t);
-                }
-                this._gameState.awardPoints(player.id, points);
-                await wait(800); // TODO: test this domino pause
-            }
-            await wait(2000);
-            */
 
             this._gameState.clearSubmissionStates();
             this._gameState.sortPlayers();
@@ -268,7 +297,6 @@ class Host {
         const { type, data } = message;
         switch (type) {
             case ClientMessageType.Join: {
-                // TODO PLAYER SHOULD GENERATE AND SEND THEIR OWN ID SO THEY CAN RECONNECT WITH IT
                 this._handleJoin(playerId, data.name);
                 break;
             }
@@ -292,8 +320,22 @@ class Host {
     }
 
     private _handleJoin(playerId: string, name: string) {
-        // TODO allowed to join with existing name if player id matches and that player is disconnected
-        // this._gameState.updatePlayer(playerId, { isConnected: true });
+        const existingPlayer = this._gameState.players.find((player) => player.name === name && !player.isConnected);
+        if (existingPlayer) {
+            // TODO need to change their id
+            this._gameState.updatePlayer(existingPlayer.id, { id: playerId, isConnected: true });
+            SoundManager.playOneShot(SoundManager.OneShot.PlayerReconnect);
+            this._sendMessage(playerId, {
+                type: HostMessageType.JoinSuccess,
+                data: {},
+            });
+            this._sendMessage(playerId, {
+                type: HostMessageType.UpdateGamePhase,
+                data: {
+                    gamePhase: this._gameState.gamePhase,
+                },
+            });
+        }
 
         if (this._gameState.gamePhase === GamePhase.Lobby) {
             const isTaken = this._gameState.disabledNames.has(name);
@@ -306,8 +348,13 @@ class Host {
                 });
             } else {
                 this._gameState.addPlayer(playerId, name);
+                SoundManager.playOneShot(SoundManager.OneShot.PlayerJoin);
                 this._sendMessage(playerId, {
                     type: HostMessageType.JoinSuccess,
+                    data: {},
+                });
+                this._sendMessage(playerId, {
+                    type: HostMessageType.UpdateDisabledAvatars,
                     data: {
                         disabledAvatars: Array.from(this._gameState.disabledAvatars),
                     },
@@ -325,13 +372,15 @@ class Host {
 
     private _handleLeave(playerId: string) {
         this._gameState.removePlayer(playerId);
+        SoundManager.playOneShot(SoundManager.OneShot.PlayerLeave);
     }
 
     private _handleDisconnect(playerId: string) {
         if (this._gameState.gamePhase === GamePhase.Lobby) {
-            this._gameState.removePlayer(playerId);
+            this._handleLeave(playerId);
         } else {
             this._gameState.updatePlayer(playerId, { isConnected: false });
+            SoundManager.playOneShot(SoundManager.OneShot.PlayerDisconnect);
         }
     }
 
@@ -390,6 +439,7 @@ class Host {
         const t = 1 - (Date.now() - startTime) / (endTime - startTime);
         this._gameState.setSubmission(playerId, answers, t);
         this._gameState.updateSubmissionState(playerId, [SubmissionState.Submitted]);
+        SoundManager.playOneShot(SoundManager.OneShot.Submission);
         if (this._gameState.players.every(({ submission }) => submission)) {
             this._resolveSubmissions?.();
         }

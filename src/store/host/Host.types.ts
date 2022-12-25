@@ -13,10 +13,7 @@ export enum HostMessageType {
 export type HostMessage =
     | {
           type: HostMessageType.JoinSuccess;
-          data: {
-              disabledAvatars: AvatarImage[];
-              // TODO gamePhase: GamePhase;
-          };
+          data: Record<string, never>;
       }
     | {
           type: HostMessageType.JoinError;

@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx';
+import { v4 as uuid } from 'uuid';
 import { SubmissionState } from '@components/ui/SubmissionStatus';
 import { AvatarImage, GamePhase, Prompt } from '@store/common/common.types';
 
@@ -9,6 +10,7 @@ interface HostPlayer {
     isConnected: boolean;
     name: string;
     points: number;
+    stableId: string;
 }
 
 interface SubmissionData {
@@ -19,6 +21,11 @@ interface SubmissionData {
 interface HostPlayerDerived {
     submission: SubmissionData | null;
     submissionState: SubmissionState[] | null;
+}
+
+interface RoundState {
+    currentRound: number;
+    totalRounds: number;
 }
 
 interface PromptState {
@@ -35,12 +42,9 @@ interface TimerState {
 
 class GameState {
     private _joinCode: string;
-    private _players: Map<string, HostPlayer>;
+    private _players: HostPlayer[];
     private _gamePhase: GamePhase;
-    // TODO we should load up all of the prompts ahead of time
-    // TODO timer
-    //private _prompts: Prompt[];
-    //private _currentPromptIndex: number;
+    private _roundState: RoundState;
     private _promptState: PromptState | null;
     private _timerState: TimerState | null;
     private _submissions: Map<string, SubmissionData>;
@@ -51,7 +55,7 @@ class GameState {
     }
 
     public get players(): (HostPlayer & HostPlayerDerived)[] {
-        return Array.from(this._players.values())
+        return this._players
             .map((player) => ({
                 ...player,
                 submission: this._submissions.get(player.id) || null,
@@ -74,6 +78,10 @@ class GameState {
 
     public get gamePhase(): GamePhase {
         return this._gamePhase;
+    }
+
+    public get roundState(): RoundState {
+        return this._roundState;
     }
 
     public get promptState(): PromptState | null {
@@ -100,12 +108,14 @@ class GameState {
     }
     */
 
-    constructor(joinCode: string) {
+    constructor(joinCode: string, totalRounds: number) {
         this._joinCode = joinCode;
-        this._players = new Map();
+        this._players = [];
         this._gamePhase = GamePhase.Lobby;
-        //this._prompts = prompts;
-        //this._currentPromptIndex = 0;
+        this._roundState = {
+            currentRound: 1,
+            totalRounds,
+        };
         this._promptState = null;
         this._timerState = null;
         this._submissions = new Map();
@@ -114,40 +124,41 @@ class GameState {
     }
 
     getPlayer(playerId: string) {
-        return this._players.get(playerId);
+        return this._players.find((player) => player.id === playerId);
     }
 
     addPlayer(playerId: string, name: string) {
-        // TODO play sound
-        this._players.set(playerId, {
+        this._players.push({
             avatarImage: AvatarImage.None,
             displayOrder: 10000,
             id: playerId,
             isConnected: true,
             name,
             points: 0,
+            stableId: uuid(),
         });
     }
 
     removePlayer(playerId: string) {
-        // TODO play sound
-        this._players.delete(playerId);
+        const index = this._players.findIndex((player) => player.id === playerId);
+        if (index !== -1) {
+            this._players.splice(index, 1);
+        }
     }
 
-    updatePlayer(playerId: string, data: Partial<Omit<HostPlayer, 'id'>>) {
-        const player = this._players.get(playerId);
-        if (typeof player === 'undefined') {
-            console.warn(`Attempted to update non-existent player with ID '${playerId}'`);
-            return;
+    updatePlayer(playerId: string, data: Partial<Omit<HostPlayer, 'stableId'>>) {
+        const player = this._players.find((player) => player.id === playerId);
+        if (player) {
+            Object.assign(player, data);
         }
-        this._players.set(playerId, {
-            ...player,
-            ...data,
-        });
     }
 
     setGamePhase(gamePhase: GamePhase) {
         this._gamePhase = gamePhase;
+    }
+
+    setCurrentRound(currentRound: number) {
+        this._roundState.currentRound = currentRound;
     }
 
     setPrompt(prompt: Prompt) {
@@ -212,7 +223,7 @@ class GameState {
     }
 
     awardPoints(playerId: string, points: number) {
-        const player = this._players.get(playerId);
+        const player = this._players.find((player) => player.id === playerId);
         if (player) {
             player.points += points;
         }
@@ -223,12 +234,6 @@ class GameState {
             player.displayOrder = player.points;
         }
     }
-
-    /*
-    updateSubmissionStateAll() {
-        //
-    }
-    */
 }
 
 export default GameState;

@@ -14,11 +14,17 @@ export interface ClientState {
     error: string | null;
 }
 
+export interface JoinFormInitialValues {
+    joinCode: string;
+    name: string;
+}
+
 export interface GlobalContextValue {
     clientState: ClientState;
     createClient: (joinCode: string, name: string) => Promise<void>;
     createHost: () => Promise<void>;
     hostState: HostState;
+    joinFormInitialValues?: JoinFormInitialValues;
 }
 
 const GlobalContext = createContext<GlobalContextValue | null>(null);

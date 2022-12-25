@@ -14,9 +14,9 @@ const PlayerList: React.FC = () => {
     return (
         <Root>
             <PlayerListComponent>
-                {host.gameState.players.map(({ avatarImage, id, isConnected, name, points, submissionState }) => (
+                {host.gameState.players.map(({ avatarImage, isConnected, name, points, stableId, submissionState }) => (
                     <div
-                        key={id}
+                        key={stableId}
                         style={{
                             display: 'flex',
                             flexFlow: 'row nowrap',

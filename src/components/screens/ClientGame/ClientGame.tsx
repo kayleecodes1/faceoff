@@ -4,6 +4,7 @@ import AvatarSelect from '@components/ui/AvatarSelect';
 import ChangeNameForm from '@components/ui/ChangeNameForm';
 import SubmissionForm from '@components/ui/SubmissionForm';
 import AvatarResult from '@components/ui/AvatarResult';
+import Message from '@components/ui/Message';
 import { useClient } from '@contexts/ClientContext';
 import { AvatarImage, GamePhase, SubmissionResult } from '@store/common/common.types';
 import { Root, Container } from './ClientGame.styles';
@@ -41,7 +42,7 @@ const ClientSubmissionForm: React.FC = observer(() => {
         setIsSubmitted(true);
     };
 
-    return isSubmitted ? null : <SubmissionForm onSubmit={handleSubmit} />;
+    return isSubmitted ? <Message>Waiting for other players...</Message> : <SubmissionForm onSubmit={handleSubmit} />;
 });
 
 const ClientResults: React.FC = observer(() => {
@@ -71,7 +72,7 @@ const ClientContent: React.FC = observer(() => {
             return <ClientLobby />;
         }
         case GamePhase.Prompt: {
-            return null;
+            return <Message>Waiting for prompt...</Message>;
         }
         case GamePhase.Submission: {
             return <ClientSubmissionForm />;
@@ -81,7 +82,7 @@ const ClientContent: React.FC = observer(() => {
         }
         case GamePhase.End: {
             // TODO
-            return null;
+            return <Message>End</Message>;
         }
     }
 });

@@ -17,12 +17,13 @@ const validationSchema = yup.object().shape({
 });
 
 interface JoinLobbyFormProps {
+    initialValues?: { joinCode: string; name: string };
     onSubmit: (values: { joinCode: string; name: string }) => Promise<void>;
 }
 
-const JoinLobbyForm: React.FC<JoinLobbyFormProps> = ({ onSubmit }) => {
+const JoinLobbyForm: React.FC<JoinLobbyFormProps> = ({ initialValues, onSubmit }) => {
     const formik = useFormik({
-        initialValues: {
+        initialValues: initialValues || {
             joinCode: '',
             name: '',
         },

@@ -1,16 +1,22 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import Client from '@store/client/Client';
 import Host from '@store/host/Host';
 import generateJoinCode from '@utilities/generateJoinCode';
-import GlobalContext, { ClientState, HostState } from './GlobalContext';
+import GlobalContext, { ClientState, HostState, JoinFormInitialValues } from './GlobalContext';
 
 const LOCAL_STORAGE_KEY_JOIN_FORM = 'FaceOff::joinForm';
+
+const getJoinFormInitialValues = (): JoinFormInitialValues | undefined => {
+    const json = localStorage.getItem(LOCAL_STORAGE_KEY_JOIN_FORM);
+    return json && JSON.parse(json);
+};
 
 interface GlobalProviderProps {
     children?: React.ReactNode;
 }
 
 const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
+    const joinFormInitialValues = useRef<JoinFormInitialValues | undefined>(getJoinFormInitialValues());
     const [hostState, setHostState] = useState<HostState>({
         isConnecting: false,
         host: null,
@@ -66,6 +72,7 @@ const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
             createHost,
             clientState,
             hostState,
+            joinFormInitialValues: joinFormInitialValues.current,
         }),
         [createClient, createHost, clientState, hostState],
     );

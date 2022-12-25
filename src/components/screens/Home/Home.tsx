@@ -5,8 +5,7 @@ import useGlobalContext from '@contexts/GlobalContext/useGlobalContext';
 import { Root, Container, Divider } from './Home.styles';
 
 const Lobby: React.FC = () => {
-    const { clientState, createClient, createHost, hostState } =
-        useGlobalContext();
+    const { createClient, createHost, joinFormInitialValues } = useGlobalContext();
 
     const handleSubmitJoin = useCallback(
         async ({ joinCode, name }: { joinCode: string; name: string }) => {
@@ -22,7 +21,7 @@ const Lobby: React.FC = () => {
     return (
         <Root>
             <Container>
-                <JoinLobbyForm onSubmit={handleSubmitJoin} />
+                <JoinLobbyForm initialValues={joinFormInitialValues} onSubmit={handleSubmitJoin} />
                 <Divider>or</Divider>
                 <CreateLobbyForm onSubmit={handleSubmitCreate} />
             </Container>
