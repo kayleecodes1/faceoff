@@ -59,6 +59,16 @@ const loopClips: Record<Loop, string> = {
     [Loop.Timer]: timer,
 };
 
+// Pre-load audio files.
+for (const src of Object.values(oneShotClips)) {
+    const audio = new Audio(src);
+    audio.load();
+}
+for (const src of Object.values(loopClips)) {
+    const audio = new Audio(src);
+    audio.load();
+}
+
 abstract class SoundManager {
     static OneShot = OneShot;
     static Loop = Loop;
