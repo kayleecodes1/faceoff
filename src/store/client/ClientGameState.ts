@@ -13,6 +13,7 @@ class GameState {
     private _gamePhase: GamePhase;
     private _answers: [AvatarImage, AvatarImage] | null;
     private _submissionResults: [SubmissionResult, SubmissionResult] | null;
+    private _endPlacement: number | null;
 
     public get player(): ClientPlayer {
         return this._player;
@@ -34,6 +35,10 @@ class GameState {
         return this._submissionResults;
     }
 
+    public get endPlacement(): number | null {
+        return this._endPlacement;
+    }
+
     constructor(id: string, name: string) {
         this._player = {
             avatarImage: AvatarImage.None,
@@ -44,6 +49,7 @@ class GameState {
         this._gamePhase = GamePhase.Lobby; // TODO get gamephase on join
         this._answers = null;
         this._submissionResults = null;
+        this._endPlacement = null;
         makeAutoObservable(this);
     }
 
@@ -69,6 +75,10 @@ class GameState {
 
     updateSubmissionResults(submissionResults: [SubmissionResult, SubmissionResult] | null) {
         this._submissionResults = submissionResults;
+    }
+
+    setEndPlacement(placement: number) {
+        this._endPlacement = placement;
     }
 }
 

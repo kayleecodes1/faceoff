@@ -40,6 +40,12 @@ interface TimerState {
     endTime: number;
 }
 
+export interface Winner {
+    avatarImage: AvatarImage;
+    name: string;
+    placement: 1 | 2 | 3;
+}
+
 class GameState {
     private _joinCode: string;
     private _players: HostPlayer[];
@@ -49,6 +55,7 @@ class GameState {
     private _timerState: TimerState | null;
     private _submissions: Map<string, SubmissionData>;
     private _submissionStates: Map<string, SubmissionState[]>;
+    private _winners: Winner[];
 
     public get joinCode(): string {
         return this._joinCode;
@@ -100,6 +107,10 @@ class GameState {
         return this._submissionStates;
     }
 
+    public get winners(): Winner[] {
+        return this._winners;
+    }
+
     /*
     // TODO timer
     private _currentPrompt: Prompt | null;
@@ -120,6 +131,7 @@ class GameState {
         this._timerState = null;
         this._submissions = new Map();
         this._submissionStates = new Map();
+        this._winners = [];
         makeAutoObservable(this);
     }
 
@@ -233,6 +245,10 @@ class GameState {
         for (const player of this._players.values()) {
             player.displayOrder = player.points;
         }
+    }
+
+    setWinners(winners: Winner[]) {
+        this._winners = winners;
     }
 }
 

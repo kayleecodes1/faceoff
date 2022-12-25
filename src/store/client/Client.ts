@@ -136,6 +136,10 @@ class Client {
                 this._handleUpdateSubmissionResult(data.results);
                 break;
             }
+            case HostMessageType.UpdateEndPlacement: {
+                this._handleUpdateEndPlacement(data.placement);
+                break;
+            }
         }
     }
 
@@ -164,6 +168,10 @@ class Client {
 
     private _handleUpdateSubmissionResult(results: [SubmissionResult, SubmissionResult]) {
         this._gameState.updateSubmissionResults(results);
+    }
+
+    private _handleUpdateEndPlacement(placement: number) {
+        this._gameState.setEndPlacement(placement);
     }
 }
 

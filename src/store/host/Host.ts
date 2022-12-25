@@ -5,10 +5,10 @@ import fetchPrompts from '@utilities/fetchPrompts';
 import selectRandomSubset from '@utilities/selectRandomSubset';
 import wait from '@utilities/wait';
 import { HostMessage, HostMessageType } from './Host.types';
-import HostGameState from './HostGameState';
+import HostGameState, { Winner } from './HostGameState';
 import SoundManager from './SoundManager';
 
-const NUM_PROMPTS = 20;
+const NUM_PROMPTS = 2;
 const TIMER_DURATION_MS = 30 * 1000;
 
 const calculatePoints = (t: number) => {
@@ -219,7 +219,7 @@ class Host {
             const sourceB = this._gameState.promptState?.prompt.sourceB.identity;
             for (const player of this._gameState.players) {
                 if (player.submission) {
-                    const isCorrectA = sourceA && player.submission.answers.includes(sourceA);;
+                    const isCorrectA = sourceA && player.submission.answers.includes(sourceA);
                     const isCorrectB = sourceB && player.submission.answers.includes(sourceB);
                     // Update submission state.
                     const submissionState = [
@@ -258,6 +258,28 @@ class Host {
         // End
         //-------------------------------------------------------------------
         this._setGamePhase(GamePhase.End);
+        let lastPoints = -1;
+        let lastPlacement = -1;
+        const winners: Winner[] = [];
+        this._gameState.players.forEach((player, index) => {
+            const placement = player.points === lastPoints ? lastPlacement : index + 1;
+            if (index < 3) {
+                winners.push({
+                    avatarImage: player.avatarImage,
+                    name: player.name,
+                    placement: placement as 1 | 2 | 3,
+                });
+            }
+            // Notify player of placement.
+            this._sendMessage(player.id, {
+                type: HostMessageType.UpdateEndPlacement,
+                data: { placement },
+            });
+            lastPoints = player.points;
+            lastPlacement = placement;
+        });
+        this._gameState.setWinners(winners);
+        SoundManager.playOneShot(SoundManager.OneShot.GameEnd);
     }
 
     private _setGamePhase(gamePhase: GamePhase) {

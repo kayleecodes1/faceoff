@@ -8,6 +8,7 @@ export enum HostMessageType {
     UpdateDisabledAvatars = 'UpdateDisabledAvatars',
     UpdateGamePhase = 'UpdateGamePhase',
     UpdateSubmissionResult = 'UpdateSubmissionResult',
+    UpdateEndPlacement = 'UpdateEndPlacement',
 }
 
 export type HostMessage =
@@ -56,5 +57,11 @@ export type HostMessage =
           type: HostMessageType.UpdateSubmissionResult;
           data: {
               results: [SubmissionResult, SubmissionResult];
+          };
+      }
+    | {
+          type: HostMessageType.UpdateEndPlacement;
+          data: {
+              placement: number;
           };
       };

@@ -1,4 +1,5 @@
 import answerReveal from '@assets/audio/effects/answer_reveal.mp3';
+import gameEnd from '@assets/audio/effects/game_end.mp3';
 import playerDisconnect from '@assets/audio/effects/player_disconnect.mp3';
 import playerJoin from '@assets/audio/effects/player_join.mp3';
 import playerLeave from '@assets/audio/effects/player_leave.mp3';
@@ -16,6 +17,7 @@ import timer from '@assets/audio/effects/timer.mp3';
 
 enum OneShot {
     AnswerReveal = 'AnswerReveal',
+    GameEnd = 'GameEnd',
     PlayerDisconnect = 'PlayerDisconnect',
     PlayerJoin = 'PlayerJoin',
     PlayerLeave = 'PlayerLeave',
@@ -37,6 +39,7 @@ enum Loop {
 
 const oneShotClips: Record<OneShot, string> = {
     [OneShot.AnswerReveal]: answerReveal,
+    [OneShot.GameEnd]: gameEnd,
     [OneShot.PlayerDisconnect]: playerDisconnect,
     [OneShot.PlayerJoin]: playerJoin,
     [OneShot.PlayerLeave]: playerLeave,

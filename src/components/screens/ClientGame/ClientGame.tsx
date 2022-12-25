@@ -7,6 +7,7 @@ import AvatarResult from '@components/ui/AvatarResult';
 import Message from '@components/ui/Message';
 import { useClient } from '@contexts/ClientContext';
 import { AvatarImage, GamePhase, SubmissionResult } from '@store/common/common.types';
+import ordinalSuffix from '@utilities/ordinalSuffix';
 import { Root, Container } from './ClientGame.styles';
 
 const ClientLobby: React.FC = observer(() => {
@@ -45,6 +46,21 @@ const ClientSubmissionForm: React.FC = observer(() => {
     return isSubmitted ? <Message>Waiting for other players...</Message> : <SubmissionForm onSubmit={handleSubmit} />;
 });
 
+const ClientEndScreen: React.FC = observer(() => {
+    const client = useClient();
+    const { endPlacement } = client.gameState;
+
+    if (!endPlacement) {
+        return null;
+    }
+
+    return (
+        <Message>
+            You ended in <strong>{ordinalSuffix(endPlacement)}</strong> place!
+        </Message>
+    );
+});
+
 const ClientResults: React.FC = observer(() => {
     const client = useClient();
 
@@ -81,8 +97,7 @@ const ClientContent: React.FC = observer(() => {
             return <ClientResults />;
         }
         case GamePhase.End: {
-            // TODO
-            return <Message>End</Message>;
+            return <ClientEndScreen />;
         }
     }
 });
