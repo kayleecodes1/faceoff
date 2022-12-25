@@ -62,11 +62,11 @@ const loopClips: Record<Loop, string> = {
 // Pre-load audio files.
 for (const src of Object.values(oneShotClips)) {
     const audio = new Audio(src);
-    audio.load();
+    audio.preload = 'auto';
 }
 for (const src of Object.values(loopClips)) {
     const audio = new Audio(src);
-    audio.load();
+    audio.preload = 'auto';
 }
 
 abstract class SoundManager {
