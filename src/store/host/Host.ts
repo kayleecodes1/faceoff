@@ -8,7 +8,7 @@ import { HostMessage, HostMessageType } from './Host.types';
 import HostGameState, { Winner } from './HostGameState';
 import SoundManager from './SoundManager';
 
-const NUM_PROMPTS = 2;
+const NUM_PROMPTS = 20;
 const TIMER_DURATION_MS = 30 * 1000;
 
 const calculatePoints = (t: number) => {
